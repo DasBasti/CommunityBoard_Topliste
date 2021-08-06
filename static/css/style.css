@@ -1,0 +1,77 @@
+.container-fluid {
+	max-width:1024px;
+ }
+
+.pcb-string {
+	overflow-wrap: anywhere;
+}
+
+ #overlay {
+    position: fixed; /* Sit on top of the page content */
+    display: none; /* Hidden by default */
+    width: 100%; /* Full width (cover the whole page) */
+    height: 100%; /* Full height (cover the whole page) */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.5); /* Black background with opacity */
+    z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+    cursor: pointer; /* Add a pointer on hover */
+}
+
+#virtualpcb {
+    position: fixed;
+	transform: scaleY(.5) translateX(5em);
+    z-index: 2;
+    display: none;
+    background-color: #fff;
+}
+#virtualpcb>div {
+	display: inline-block;
+	transform: rotate(133.5deg) ;
+}
+
+#virtualpcb button {
+	width: 25px;
+	height: 25px;
+	margin: 1px 0;
+	padding: 0;
+}
+
+button[colorChar="w"] {
+	color: #000;
+	background-color:#fff;
+}
+button[colorChar="s"] {
+	color: #fff;
+	background-color:#000;
+}
+button[colorChar="b"] {
+	color: #fff;
+	background-color:#00f;
+}
+button[colorChar="r"] {
+	color: #fff;
+	background-color:#f00;
+}
+button[colorChar="g"] {
+	color: #000;
+	background-color:#0f0;
+}
+button[colorChar="y"] {
+	color: #000;
+	background-color:#ff0;
+}
+button[colorChar="o"] {
+	color: #000;
+	background-color: #f70;
+}
+button[colorChar="c"] {
+	color: #000;
+	background-color:#0ff;
+}
+button[colorChar="m"] {
+	color: #000;
+	background-color:#f0f;
+}

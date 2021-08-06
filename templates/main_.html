@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+         /* unvisited link */
+a:link {
+  color: black;
+}
+
+/* visited link */
+a:visited {
+  color: black;
+}
+
+/* mouse over link */
+a:hover {
+  color: black;
+}
+
+/* selected link */
+a:active {
+  color: black;
+} 
+    </style>
+{% if twitch %}
+   <script src="{{ url_for('static', filename='twitch.js') }}"></script>
+   <script>
+      function send_chat (code) {
+         const token = "{{ twitch }}";
+         const username = "{{ user }}";
+
+         const channel = "Platinenmacher";
+         const { chat } = new TwitchJs({ token, username });
+         chat.connect().then(() => {
+          chat.say(channel, "!pcb "+code).then(()=>{
+             chat.disconnect();
+          })
+        });
+      };
+   </script>
+{% endif %}
+</head>
+<body>
+   {%- for message in get_flashed_messages() %}
+      {{ message }}
+   {%- endfor %}
+
+<h1><a href="/">!pcb Strings</a></h1>
+{% if twitch %}
+<a href="{{ url_for('logout') }}">Logout</a>
+{% else %}
+<a href="{{ url_for('login') }}">Login</a>
+{% endif %}
+<table>
+    <thead>
+       <tr>
+         <th></th>
+         <th>Ersteller</th>
+         <th>String</th>
+          <th><a href="{{ url_for('show_most_used') }}">Counter</a></th>
+          <th><a href="/">Gesehen</a></th>
+          {% if twitch %}
+          <th></th>
+          <th></th>
+          <th></th>
+          {% endif %}
+         </tr>
+    </thead>
+
+    <tbody>
+       {% for string in entries %}
+          <tr>
+             <td>{{ string.upvotes }}</td>
+             <td><a href="{{ url_for('show_users_list', username=string.username) }}">{{ string.username }}</a></td>
+             <td><a href="{{ url_for('static', filename='pcb.html', code=string.str) }}">{{ string.str }}</a></td>
+             <td>{{ string.counter }}</td>
+             <td>{{ string.last_seen }}</td>
+             {% if twitch %}
+               <td><a href="#" onclick="send_chat('{{ string.str }}')">pfostieren</a></td>
+               <td><a href="{{ url_for('upvote', code=string.str) }}">+</a></td>
+               <td><a href="{{ url_for('downvote', code=string.str) }}">-</a></td>
+             {% endif %}
+          </tr>
+       {% endfor %}
+    </tbody>
+ </table>
+</body>
+</html> 

@@ -1,0 +1,49 @@
+{% for string in entries %}
+<div class="row">
+    <div class="col-md-1">
+        {% if twitch %}
+            {% if string.voted is none or string.voted is false %}
+                <a href="{{ url_for('upvote', code=string.pcb_string.str, url=url_for(request.endpoint, username=username)) }}"><i class="fa fa-arrow-up" aria-hidden="true"></i></a>
+            {% else %}
+                <i class="fa fa-arrow-up" aria-hidden="true"></i>
+            {% endif %}
+        {% endif %}
+        
+        {{ string.pcb_string.upvotes }}
+        
+        {% if twitch %}
+            {% if string.voted is none or string.voted is true %}
+                <a href="{{ url_for('downvote', code=string.pcb_string.str, url=url_for(request.endpoint, username=username)) }}"><i class="fa fa-arrow-down" aria-hidden="true"></i></a>
+            {% else %}
+                <i class="fa fa-arrow-down" aria-hidden="true"></i>
+            {% endif %}
+        {% endif %}
+        <br/>
+    </div>
+    <div class="col-md-2">
+        <a href="{{ url_for('show_users_list', username=string.pcb_string.username) }}">{{ string.pcb_string.username }}</a>
+    </div>
+    <div class="col-md-3">
+        <canvas width="240" height="150" 
+        {% if twitch %}
+        onclick="send_chat('{{ string.pcb_string.str }}')"
+        {% endif %}
+        code="{{ string.pcb_string.str }}"></canvas>
+    </div>
+    <div class="col-md-1">
+        {{ string.pcb_string.counter }}
+        <small>zuletzt {{ string.pcb_string.last_seen }}</small>
+    </div>
+    <div class="col-md-1">
+        <a href="{{ url_for('static', filename='pcb.html', code=string.pcb_string.str) }}">
+            Edit
+        </a>
+    </div>
+    {% if twitch %}
+    <div class="col-md-1">
+        <td><a href="#" onclick="send_chat('{{ string.pcb_string.str }}')"><i class="fa fa-commenting-o" aria-hidden="true"></i>
+        </a></td>
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
