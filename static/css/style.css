@@ -1,3 +1,13 @@
+:root {
+	--upvoted-color: #06d6a0;
+	--downvoted-color: #ef476f;
+	--notvoted-color: #118ab2;
+	--header-background: #5c95a8;
+	--primary-color: #000;
+	--secondary-color: #073b4c;
+	--infotext-background: #ffd166;
+}
+
 .container-fluid {
 	max-width:1024px;
  }
@@ -86,4 +96,8 @@ button[colorChar="c"] {
 button[colorChar="m"] {
 	color: #000;
 	background-color:#f0f;
+}
+
+.background{
+	background-color: var(--header-background);
 }

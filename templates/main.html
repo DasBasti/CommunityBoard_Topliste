@@ -53,6 +53,31 @@
 				buttons.item(i).setAttribute("colorChar",code.substr(i,1))
 			}
 		}
+
+		function upvote(code) {
+			var xmlHttp = new XMLHttpRequest();
+		    xmlHttp.open( "GET", "{{ url_for('api_upvote', code='')}}/"+code ); // false for synchronous request
+			xmlHttp.onload = () => {
+				document.getElementById(code+"-up").style = "color: var(--upvoted-color)";
+				document.getElementById(code+"-down").style = "color: var(--notvoted-color)";
+				document.getElementById(code+"-votes").innerText = xmlHttp.responseText;	
+			};
+    		xmlHttp.send( null );
+    		return xmlHttp.responseText;
+		}
+
+		function downvote(code) {
+			var xmlHttp = new XMLHttpRequest();
+		    xmlHttp.open( "GET", "{{ url_for('api_downvote', code='')}}/"+code ); // false for synchronous request
+			xmlHttp.onload = () => {
+				document.getElementById(code+"-up").style = "color: var(--notvoted-color)";
+				document.getElementById(code+"-down").style = "color: var(--downvoted-color)";
+				document.getElementById(code+"-votes").innerText = xmlHttp.responseText;	
+			};    		
+			xmlHttp.send( null );
+    		return xmlHttp.responseText;
+		}
+
 	</script>
  {% endif %}
 
@@ -90,7 +115,7 @@
     <div class="container-fluid">
 	<div class="row">
 		<div class="col-md-12">
-			<nav class="navbar navbar-expand navbar-light bg-light">
+			<nav class="navbar navbar-expand navbar-light background">
 				 
 				<a class="navbar-brand" href="{{ url_for('index') }}">!PCB Strings</a>
 				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
@@ -111,9 +136,9 @@
 					</ul>
 				</div>
 			</nav>
-
+			<div id="stringlist">
 			{% include('string_list.html') %}
-
+		</div>
 			<div id="overlay"></div> 
 			<div id="editor">
 				{% include('editor.html') %}

@@ -2,7 +2,7 @@
   [X] Wartedialog hat einen timeout, wenn posten nicht funktioniert
   [ ] Info wenn posten in den Chat fehlgeschlagen ist
 [X] Nach Vote auf die vorherige Seite, nicht Index
-  [ ] Möglichkeit Vote ohne neuladen der Seite durchzuführen
+  [X] Möglichkeit Vote ohne neuladen der Seite durchzuführen
 [X] Bild anstatt String anzeigen
   [X] Zeile umdesignen -> include template
   [ ] Nicknames für Strings gesetzt von Admin oder Ersteller

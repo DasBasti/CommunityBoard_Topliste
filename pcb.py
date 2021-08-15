@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, session, redirect, request, url_for
+from flask.helpers import make_response
 from flask_dance.contrib.twitch import make_twitch_blueprint, twitch
 
 from flask_sqlalchemy import SQLAlchemy
@@ -72,7 +73,7 @@ class vote(db.Model):
     str_id = db.Column(db.Integer, db.ForeignKey('pcb_string.id'))
     vote =  db.Column(db.Boolean, default=0)
 
-def list_page(entries, pageusername=""):    
+def list_page(entries, pageusername="", template="main.html"):    
     if twitch.authorized and not session.get('user'):
         resp=twitch.get("users")
         print(resp.content)
@@ -82,7 +83,7 @@ def list_page(entries, pageusername=""):
     username = ""
     if session.get('user'):
         username = session.get('user')[0]['display_name']
-    return render_template('main.html', 
+    return render_template(template, 
         entries = entries, 
         twitch=twitch.access_token,
         user=username,
@@ -126,8 +127,7 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
-@app.route('/up/<code>')
-def upvote(code):
+def do_upvote(code):
     if session['user']:
         data = pcb_string.query.filter_by(str=code).first()
         if data:
@@ -145,12 +145,27 @@ def upvote(code):
                 db.session.add(data)
                 db.session.add(user_voted)
                 db.session.commit()
+            else:
+                return "Vote not counted"
+        else:
+            return "String not found"
+        return data.upvotes
+
+
+@app.route('/up/<code>')
+def upvote(code):
+    do_upvote(code)
     if "url" in request.args:
         return redirect(request.args["url"])
     return redirect(url_for('index'))
 
-@app.route('/down/<code>')
-def downvote(code):
+@app.route('/api/up/<code>')
+def api_upvote(code):
+    votes = do_upvote(code)
+    return make_response(str(votes), 200)
+
+
+def do_downvote(code):
     if session['user']:
         data = pcb_string.query.filter_by(str=code).first()
         if data:
@@ -168,9 +183,23 @@ def downvote(code):
                 db.session.add(data)
                 db.session.add(user_voted)
                 db.session.commit()
+            else:
+                return "Vote not counted"
+        else:
+            return "String not found"
+        return data.upvotes
+
+@app.route('/down/<code>')
+def downvote(code):
+    do_downvote(code)
     if "url" in request.args:
         return redirect(request.args["url"])
     return redirect(url_for('index'))
+
+@app.route('/api/down/<code>')
+def api_downvote(code):
+    votes = do_downvote(code)
+    return make_response(str(votes),200)
 
 @app.route('/chat', methods=['POST'])
 def chat_in():

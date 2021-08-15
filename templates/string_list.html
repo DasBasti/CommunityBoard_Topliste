@@ -2,29 +2,27 @@
 <div class="row">
     <div class="col-md-1">
         {% if twitch %}
+            <i id="{{ string.pcb_string.str }}-up" class="fa fa-arrow-up" aria-hidden="true"
+                onclick="upvote('{{ string.pcb_string.str }}')"
             {% if string.voted is none or string.voted is false %}
-                {% if username %}
-                    <a href="{{ url_for('upvote', code=string.pcb_string.str, url=url_for(request.endpoint, username=username)) }}"><i class="fa fa-arrow-up" aria-hidden="true"></i></a>
-                {% else %}
-                    <a href="{{ url_for('upvote', code=string.pcb_string.str, url=url_for(request.endpoint)) }}"><i class="fa fa-arrow-up" aria-hidden="true"></i></a>
-                {% endif %}
+                    style="color: var(--notvoted-color)"
             {% else %}
-                <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                    style="color: var(--upvoted-color)"
             {% endif %}
+            ></i>
         {% endif %}
-        {{string.voted}}
-        {{ string.pcb_string.upvotes }}
+
+        <b id="{{ string.pcb_string.str }}-votes">{{ string.pcb_string.upvotes }}</b>
         
         {% if twitch %}
+            <i id="{{ string.pcb_string.str }}-down" class="fa fa-arrow-down" aria-hidden="true"
+                onclick="downvote('{{ string.pcb_string.str }}')"
             {% if string.voted is none or string.voted is true %}
-                {% if username %}
-                <a href="{{ url_for('downvote', code=string.pcb_string.str, url=url_for(request.endpoint, username=username)) }}"><i class="fa fa-arrow-down" aria-hidden="true"></i></a>
-                {% else %}
-                <a href="{{ url_for('downvote', code=string.pcb_string.str, url=url_for('index')) }}"><i class="fa fa-arrow-down" aria-hidden="true"></i></a>
-                {% endif %}
+                    style="color: var(--notvoted-color)"
             {% else %}
-                <i class="fa fa-arrow-down" aria-hidden="true"></i>
+                    style="color: var(--downvoted-color)"
             {% endif %}
+            ></i>
         {% endif %}
         <br/>
     </div>
