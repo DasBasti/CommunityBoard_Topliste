@@ -225,6 +225,12 @@ def update_string():
         db.session.commit()
     return redirect(url_for('index'))
 
+@app.route('/api/alias/<alias>')
+def get_from_alias(alias):
+    str = pcb_string.query.filter_by(name=alias).first()
+    return str.str
+
+
 if __name__ == '__main__':
     db.create_all()
     app.run(host="0.0.0.0", debug = True)
