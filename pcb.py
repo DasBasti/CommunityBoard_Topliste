@@ -1,12 +1,12 @@
-from flask import Flask, request, render_template, session, redirect, request, url_for, jsonify
+from flask import Flask, request, render_template, session, redirect, request, url_for
 from flask_dance.contrib.twitch import make_twitch_blueprint, twitch
 
 from flask_sqlalchemy import SQLAlchemy
 import json, os
 
-from sqlalchemy import and_, or_, case
+from sqlalchemy import and_
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.expression import outerjoin, select
+from sqlalchemy.sql.expression import select
 from sqlalchemy.sql.functions import user
 from dotenv import load_dotenv
 from pprint import PrettyPrinter
@@ -18,9 +18,9 @@ import logging
 FORMAT = '%(message)s'
 logging.basicConfig(
     format=FORMAT, datefmt='%m/%d/%Y %I:%M:%S %p',
-    filename='app.log', level=logging.ERROR)
+    filename='app.log', level=logging.INFO)
 logger = logging.getLogger('sqlalchemy.engine')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 pp = PrettyPrinter()
 
@@ -31,7 +31,6 @@ app.config['APPLICATION_ROOT'] = "/pcb"
 app.config['SECRET_KEY'] = os.getenv("APP_SECRET_KEY") 
 
 ### REMOVE ON SERVER!
-#import os 
 #os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 scope = [
@@ -58,7 +57,7 @@ class pcb_string(db.Model):
     upvotes = db.Column(db.Integer)
     last_seen = db.Column(db.TIMESTAMP, server_default=db.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     hidden = db.Column(db.Boolean, default=False)
-    name = db.Column(db.String(100))
+    name = db.Column(db.String(100), unique=True)
     voted = relationship('vote')
 
     def __init__(self, username, str):
@@ -185,6 +184,17 @@ def chat_in():
         db.session.add(db_str)    
         db.session.commit()
     return ""
+
+@app.route('/update_string', methods=['POST'])
+def update_string():
+    name = request.form.get('name')
+    pcb_str = request.form.get('pcb_string')
+    db_str = pcb_string.query.filter_by(str=pcb_str).first()
+    if db_str:
+        db_str.name = name
+        db.session.add(db_str)    
+        db.session.commit()
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     db.create_all()

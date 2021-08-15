@@ -31,6 +31,28 @@
 		   		})
 			}).then(()=>{overlay.style.display = "none";});
 	   	};
+
+		function edit_code (code, name="") {
+			const editor = document.getElementById("editor");
+			editor.style.display = "block";
+
+			const buttons = document.querySelectorAll("#virtualpcb button"); //PCB Leds
+
+			let i=0
+			for(let button of buttons) { // Initialisierung LED's
+				button.setAttribute("colorChar","s");
+				button.setAttribute("pos",i++);
+			}
+
+			document.getElementById("output_str").value = "!pcb " + code;
+			document.getElementById("output_name").value = name;
+			document.getElementById("pcb_string").value = code;
+
+			code = (code.trim().toLowerCase().replace(/([^rgbmcywso])/g,"s") + Array(64).fill('s').join('')).substr(0,64) // ungültige Farben in s ändern und auf 8x8 auffüllen
+			for(let i=0; i<code.length; i++) {
+				buttons.item(i).setAttribute("colorChar",code.substr(i,1))
+			}
+		}
 	</script>
  {% endif %}
 
@@ -63,28 +85,6 @@
 	})
 	</script>
 
- <script>
-	 const show_virtual_pcb = (e) => {
-	 	const div = document.getElementById('virtualpcb');
-		div.style.display = 'block';
-		div.style.left = e.clientX+'px';
-		div.style.top = e.clientY+'px';
-
-	const buttons = document.querySelectorAll("#virtualpcb button") //PCB Leds
-
-	let i=0
-	for(let button of buttons) { // Initialisierung LED's
-		button.setAttribute("colorChar","s")
-		button.setAttribute("pos",i++)
-	}
-
-		let code = e.target.innerText;
-		code = (code.trim().toLowerCase().replace(/([^rgbmcywso])/g,"s") + Array(64).fill('s').join('')).substr(0,64) // ungültige Farben in s ändern und auf 8x8 auffüllen
-		for(let i=0; i<code.length; i++) {
-			buttons.item(i).setAttribute("colorChar",code.substr(i,1))
-		}
-	}
- </script>
   </head>
   <body>
     <div class="container-fluid">
@@ -115,6 +115,9 @@
 			{% include('string_list.html') %}
 
 			<div id="overlay"></div> 
+			<div id="editor">
+				{% include('editor.html') %}
+			</div> 
 			{% if 0 %}
 			<nav class="pagination-sm">
 				<ul class="pagination">

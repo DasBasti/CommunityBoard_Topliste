@@ -9,7 +9,9 @@
   [ ] Ausblenden Button für Admin oder Ersteller
   [ ] Löschen Button für Admin oder Ersteller
 --
-[ ] Nutzernamen in Datenbank anpassen (Groß klein Schreibung)
+[ ] Kategorien für Bilder
+[?] Nutzernamen in Datenbank anpassen (Groß klein Schreibung)
+[ ] Bilder liken (Persönliche Auswahl)
 [ ] Pagination
 [ ] Infospalte vom eingeloggten Benutzer
 [ ] Animationen

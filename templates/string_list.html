@@ -3,17 +3,25 @@
     <div class="col-md-1">
         {% if twitch %}
             {% if string.voted is none or string.voted is false %}
-                <a href="{{ url_for('upvote', code=string.pcb_string.str, url=url_for(request.endpoint, username=username)) }}"><i class="fa fa-arrow-up" aria-hidden="true"></i></a>
+                {% if username %}
+                    <a href="{{ url_for('upvote', code=string.pcb_string.str, url=url_for(request.endpoint, username=username)) }}"><i class="fa fa-arrow-up" aria-hidden="true"></i></a>
+                {% else %}
+                    <a href="{{ url_for('upvote', code=string.pcb_string.str, url=url_for(request.endpoint)) }}"><i class="fa fa-arrow-up" aria-hidden="true"></i></a>
+                {% endif %}
             {% else %}
                 <i class="fa fa-arrow-up" aria-hidden="true"></i>
             {% endif %}
         {% endif %}
-        
+        {{string.voted}}
         {{ string.pcb_string.upvotes }}
         
         {% if twitch %}
             {% if string.voted is none or string.voted is true %}
+                {% if username %}
                 <a href="{{ url_for('downvote', code=string.pcb_string.str, url=url_for(request.endpoint, username=username)) }}"><i class="fa fa-arrow-down" aria-hidden="true"></i></a>
+                {% else %}
+                <a href="{{ url_for('downvote', code=string.pcb_string.str, url=url_for('index')) }}"><i class="fa fa-arrow-down" aria-hidden="true"></i></a>
+                {% endif %}
             {% else %}
                 <i class="fa fa-arrow-down" aria-hidden="true"></i>
             {% endif %}
@@ -29,15 +37,18 @@
         onclick="send_chat('{{ string.pcb_string.str }}')"
         {% endif %}
         code="{{ string.pcb_string.str }}"></canvas>
+        {{ string.pcb_string.name or ""}}
     </div>
     <div class="col-md-1">
         {{ string.pcb_string.counter }}
         <small>zuletzt {{ string.pcb_string.last_seen }}</small>
     </div>
     <div class="col-md-1">
-        <a href="{{ url_for('static', filename='pcb.html', code=string.pcb_string.str) }}">
+        {% if string.pcb_string.username ==  user %}
+        <a onclick="edit_code('{{ string.pcb_string.str }}', '{{ string.pcb_string.name }}')">
             Edit
         </a>
+        {% endif %}
     </div>
     {% if twitch %}
     <div class="col-md-1">

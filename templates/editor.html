@@ -1,0 +1,92 @@
+<div id="virtualpcb">
+	<div>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<br>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<br>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<br>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<br>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<br>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<br>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<br>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+		<button></button>
+	</div>
+</div>
+<div id="colorSelector">
+<button	colorChar="w">White</button>
+<button	colorChar="s">Black</button>
+<button	colorChar="b">Blue</button>
+<button	colorChar="r">Red</button>
+<button	colorChar="g">Green</button>
+<button	colorChar="y">Yellow</button>
+<button	colorChar="o">Orange</button>
+<button	colorChar="c">Cyan</button>
+<button	colorChar="m">Magenta</button>
+</div>
+<form action="{{ url_for('update_string') }}" method="POST">
+    Kurzname: <input type="text" id="output_name" name="name"><br />
+    String: <input type="text" id="output_str" readonly><br />
+    <button type="submit" value="Submit">Speichern</button> <button onclick="document.getElementById('editor').style.display='none'">Abbrechen</button>
+    <input type="hidden" id="pcb_string" name="pcb_string">
+</form>
