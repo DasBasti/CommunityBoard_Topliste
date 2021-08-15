@@ -228,7 +228,10 @@ def update_string():
 @app.route('/api/alias/<alias>')
 def get_from_alias(alias):
     str = pcb_string.query.filter_by(name=alias).first()
-    return str.str
+    if(str):
+        return str.str
+    else:
+        return make_response("", 404)
 
 
 if __name__ == '__main__':
