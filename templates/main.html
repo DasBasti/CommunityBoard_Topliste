@@ -187,17 +187,22 @@
 						<li class="nav-item active">
 							 <a class="nav-link" href="{{ url_for('index') }}">Liste <span class="sr-only">(current)</span></a>
 						</li>
+						{% if twitch %}
 						<li class="nav-item">
-							{% if twitch %}
-							<a class="nav-link" href="{{ url_for('logout') }}">{{ user }} Logout</a>
-							{% else %}
-							<a class="nav-link" href="{{ url_for('login') }}">Login</a>
-							{% endif %}
+							<a class="nav-link" href="{{ url_for('show_users_list', username=user) }}">{{ user }}</a>
 						</li>
 						<li class="nav-item">
 							<a class="nav-link" onclick="edit_code('')">
 								New
 							</a>
+						</li>
+						{% endif %}
+						<li class="nav-item">
+							{% if twitch %}
+							<a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+							{% else %}
+							<a class="nav-link" href="{{ url_for('login') }}">Login</a>
+							{% endif %}
 						</li>
 					</ul>
 				</div>
