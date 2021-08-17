@@ -241,7 +241,7 @@ def delete_string():
     if db_str and db_str.username == session.get('user')[0]['display_name']:
         db.session.delete(db_str)    
         db.session.commit()
-    return redirect(url_for('index'))
+    return redirect(request.referrer)
 
 
 if __name__ == '__main__':
