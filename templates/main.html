@@ -37,14 +37,69 @@
 			editor.style.display = "block";
 
 			const buttons = document.querySelectorAll("#virtualpcb button"); //PCB Leds
+			const cbuttons = document.querySelectorAll("#colorSelector button") // Farbauswahl-Buttons
+
+			let clicked = false // Start Paint
+			let selcolor = "" // Gewählte Farbe
+			let lcb //Start LED bei auswahl Paint
+
+			if (code == "") {
+				document.getElementById('save_button').style.display='none'
+				document.getElementById('send_button').style.display='block'
+			} else {
+				document.getElementById('save_button').style.display='block'
+				document.getElementById('send_button').style.display='none'
+			}
+
+			function outputChars(){ // Ausgabe !pcb...
+				let v = ""
+				for(button of buttons) {
+					v+= button.getAttribute("colorChar")
+				}
+				document.getElementById("output_str").value = "!pcb " + v
+				document.getElementById("pcb_string").value = v
+			}
 
 			let i=0
 			for(let button of buttons) { // Initialisierung LED's
 				button.setAttribute("colorChar","s");
 				button.setAttribute("pos",i++);
+				button.addEventListener("mousedown", function() {
+					clicked = true
+					this.setAttribute("colorChar",selcolor)
+				})
+				document.addEventListener("mouseup", function() {
+					clicked = false
+					outputChars()
+				})
+				button.addEventListener("mouseenter", function() {
+					if(clicked) {
+						this.setAttribute("colorChar",selcolor)
+					}
+				})
 			}
 
-			document.getElementById("output_str").value = "!pcb " + code;
+			i=0
+			for(let button of cbuttons) { // Initialisierung Farbauswahl
+				button.addEventListener("click", function() {
+					if(lcb) {
+						lcb.classList.remove("selected")
+					}
+					lcb = this
+					selcolor = lcb.getAttribute("colorChar")
+					lcb.classList.add("selected")
+				})
+				button.addEventListener("dblclick", function() {
+					for(let button0 of buttons) {
+						button0.setAttribute("colorChar",button.getAttribute("colorChar"))
+					}
+				})
+				if(i++ == 0) {
+					button.click()
+				}
+			}
+				
+			outputChars()
 			document.getElementById("output_name").value = name;
 			document.getElementById("pcb_string").value = code;
 
@@ -133,12 +188,17 @@
 							<a class="nav-link" href="{{ url_for('login') }}">Login</a>
 							{% endif %}
 						</li>
+						<li class="nav-item">
+							<a class="nav-link" onclick="edit_code('')">
+								New
+							</a>
+						</li>
 					</ul>
 				</div>
 			</nav>
 			<div id="stringlist">
-			{% include('string_list.html') %}
-		</div>
+				{% include('string_list.html') %}
+			</div>
 			<div id="overlay"></div> 
 			<div id="editor">
 				{% include('editor.html') %}
