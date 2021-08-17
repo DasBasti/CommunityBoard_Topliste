@@ -85,7 +85,7 @@
 <button	colorChar="m">Magenta</button>
 </div>
 <form action="{{ url_for('update_string') }}" method="POST">
-    Kurzname: <input type="text" id="output_name" name="name"><br />
+    <div id="name">Kurzname: <input type="text" id="output_name" name="name"><br /></div>
     String: <input type="text" id="output_str" readonly><br />
     
 	<button id="save_button" style="display:none;" type="submit" value="Submit">Speichern</button> 
@@ -93,5 +93,6 @@
 	<button id="send_button" style="display:none;" type="button" onclick="send_chat(document.getElementById('pcb_string').value);document.getElementById('editor').style.display='none'">Send</button>
 
 <button type="button" onclick="document.getElementById('editor').style.display='none'">Abbrechen</button>
-    <input type="hidden" id="pcb_string" name="pcb_string">
+<input type="hidden" id="pcb_string" name="pcb_string">
+<input type="hidden" id="orig_pcb_string" name="orig_pcb_string">
 </form>
