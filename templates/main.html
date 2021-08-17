@@ -42,10 +42,12 @@
 			let clicked = false // Start Paint
 			let selcolor = "" // Gewählte Farbe
 			let lcb //Start LED bei auswahl Paint
+			document.getElementById("orig_pcb_string").value = code
 
 			if (code == "") {
 				document.getElementById('save_button').style.display='none'
 				document.getElementById('send_button').style.display='block'
+				document.getElementById('name').style.display='none'
 			} else {
 				document.getElementById('save_button').style.display='block'
 				document.getElementById('send_button').style.display='none'
@@ -100,7 +102,11 @@
 			}
 				
 			outputChars()
+			if (name) {
 			document.getElementById("output_name").value = name;
+			} else {
+				document.getElementById("output_name").value = "";
+			}
 			document.getElementById("pcb_string").value = code;
 
 			code = (code.trim().toLowerCase().replace(/([^rgbmcywso])/g,"s") + Array(64).fill('s').join('')).substr(0,64) // ungültige Farben in s ändern und auf 8x8 auffüllen
