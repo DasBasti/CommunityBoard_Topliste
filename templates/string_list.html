@@ -46,6 +46,10 @@
         <a onclick="edit_code('{{ string.pcb_string.str }}', '{{ string.pcb_string.name or "" }}')">
             Edit
         </a>
+        <form method="POST" action="{{url_for('delete_string')}}">
+            <button type="submit">löschen</button>
+            <input type="hidden" id="orig_pcb_string" name="orig_pcb_string" value="{{ string.pcb_string.str }}">
+        </form>
         {% endif %}
     </div>
     {% if twitch %}

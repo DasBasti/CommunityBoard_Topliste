@@ -217,10 +217,11 @@ def chat_in():
 @app.route('/update_string', methods=['POST'])
 def update_string():
     name = request.form.get('name')
-    pcb_str = request.form.get('pcb_string')
+    pcb_str = request.form.get('orig_pcb_string')
     db_str = pcb_string.query.filter_by(str=pcb_str).first()
     if db_str:
         db_str.name = name
+        db_str.str = request.form.get('pcb_string')
         db.session.add(db_str)    
         db.session.commit()
     return redirect(url_for('index'))
@@ -232,6 +233,15 @@ def get_from_alias(alias):
         return str.str
     else:
         return make_response("", 404)
+
+@app.route('/delete_string', methods=['POST'])
+def delete_string():
+    pcb_str = request.form.get('orig_pcb_string')
+    db_str = pcb_string.query.filter_by(str=pcb_str).first()
+    if db_str and db_str.username == session.get('user')[0]['display_name']:
+        db.session.delete(db_str)    
+        db.session.commit()
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
