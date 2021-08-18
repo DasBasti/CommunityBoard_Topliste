@@ -1,3 +1,4 @@
+from operator import index
 from flask import Flask, request, render_template, session, redirect, request, url_for
 from flask.helpers import make_response
 from flask_dance.contrib.twitch import make_twitch_blueprint, twitch
@@ -11,6 +12,8 @@ from sqlalchemy.sql.expression import select
 from sqlalchemy.sql.functions import user
 from dotenv import load_dotenv
 from pprint import PrettyPrinter
+
+from sqlalchemy.sql.schema import ForeignKey
 
 load_dotenv()  # take environment variables from .env.
 
@@ -60,6 +63,7 @@ class pcb_string(db.Model):
     hidden = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(100), unique=True)
     voted = relationship('vote')
+    fav = relationship('fav')
 
     def __init__(self, username, str):
         self.username = username
@@ -73,6 +77,11 @@ class vote(db.Model):
     str_id = db.Column(db.Integer, db.ForeignKey('pcb_string.id'))
     vote =  db.Column(db.Boolean, default=0)
 
+class fav(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    username = db.Column(db.String(100), index = True)
+    str_id = db.Column(db.Integer, db.ForeignKey('pcb_string.id'))
+
 def list_page(entries, pageusername="", template="main.html"):    
     if twitch.authorized and not session.get('user'):
         resp=twitch.get("users")
@@ -85,9 +94,9 @@ def list_page(entries, pageusername="", template="main.html"):
         username = session.get('user')[0]['display_name']
     return render_template(template, 
         entries = entries, 
-        twitch=twitch.access_token,
-        user=username,
-        username=pageusername
+        twitch = twitch.access_token,
+        user = username,
+        username = pageusername
     )
 @app.route('/')
 def index():
@@ -95,7 +104,7 @@ def index():
     if session.get('user'):
         username = session.get('user')[0]['display_name']
         subquery = select(vote.vote).where(and_(vote.str_id == pcb_string.id, vote.username==username)).correlate(pcb_string).label("voted")
-        q=(db.session.query(pcb_string, subquery)
+        q=(db.session.query(pcb_string, subquery, fav).join(fav, and_(fav.username==username, fav.str_id==pcb_string.id), isouter=True)
             .order_by(pcb_string.upvotes.desc(), pcb_string.counter.desc(), pcb_string.last_seen.desc())
         )
         return list_page(q.all())
@@ -110,12 +119,35 @@ def index():
 
 @app.route('/u/<username>')
 def show_users_list(username):
-    return list_page([ {"pcb_string": s, "vote": None} for s in pcb_string.query.filter(pcb_string.username.ilike(username)).order_by(pcb_string.last_seen.desc()).all()], username )
+    user = ""
+    if session.get('user'):
+        user = session.get('user')[0]['display_name']
+        return list_page(db.session.query(pcb_string, fav)
+            .filter(pcb_string.username.ilike(username))
+            .join(fav, and_(fav.username==user, fav.str_id==pcb_string.id), isouter=True)
+            .order_by(pcb_string.last_seen.desc())
+            .all(), username )
+    
+    return list_page([ {"pcb_string": s, "vote": None, "fav": None} for s in pcb_string.query.filter(pcb_string.username.ilike(username)).order_by(pcb_string.last_seen.desc()).all()], username )
 
+@app.route('/u/<username>/fav')
+def show_users_favorites(username):
+    user = ""
+    if session.get('user'):
+        user = session.get('user')[0]['display_name']
+        return list_page(db.session.query(pcb_string, fav)
+            .filter(fav.id != None)
+            .join(fav, and_(fav.username==user, fav.str_id==pcb_string.id), isouter=True)
+            .order_by(pcb_string.last_seen.desc())
+            .all(), username )
+
+    return list_page([ {"pcb_string": s, "vote": None, "fav": None} for s in fav.query.filter(fav.username.ilike(username))
+        .join(pcb_string, pcb_string.id == fav.str_id)], username )
+"""
 @app.route('/most')
 def show_most_used():
-    return list_page([ {"pcb_string": s, "vote": None} for s in pcb_string.query.filter().order_by(pcb_string.counter.desc()).all() ])
-
+    return list_page([ {"pcb_string": s, "vote": None, "fav": None} for s in pcb_string.query.filter().order_by(pcb_string.counter.desc()).all() ])
+"""
 @app.route('/login')
 def login():
     login_url = url_for('twitch.login')
@@ -163,6 +195,27 @@ def upvote(code):
 def api_upvote(code):
     votes = do_upvote(code)
     return make_response(str(votes), 200)
+
+@app.route('/api/fav/<code>')
+def api_fav(code):
+    ret = "error"
+    if session['user']:
+        data = pcb_string.query.filter_by(str=code).first()
+        if data:
+            username = session.get('user')[0]['display_name']
+            faved = fav.query.filter_by(username=username, str_id=data.id).first()
+            if faved:
+                db.session.delete(faved)
+                ret = "dislike"
+            else:
+                faved = fav(username=username, str_id=data.id)
+                db.session.add(faved)
+                ret = "like"
+            db.session.commit()
+        else:
+            return "String not found"
+
+    return make_response(ret, 200)
 
 
 def do_downvote(code):

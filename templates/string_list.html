@@ -25,6 +25,7 @@
             ></i>
         {% endif %}
         <br/>
+        {{ string.pcb_string.id }}
     </div>
     <div class="col-md-2">
         <a href="{{ url_for('show_users_list', username=string.pcb_string.username) }}">{{ string.pcb_string.username }}</a>
@@ -48,14 +49,16 @@
         </a>
         <form method="POST" action="{{url_for('delete_string')}}">
             <button type="button" onclick="if(confirm('wirklich löschen?')){submit()}">löschen</button>
-            <input type="hidden" id="orig_pcb_string" name="orig_pcb_string" value="{{ string.pcb_string.str }}">
+            <input type="hidden" name="orig_pcb_string" value="{{ string.pcb_string.str }}">
         </form>
         {% endif %}
     </div>
     {% if twitch %}
     <div class="col-md-1">
         <td><a href="#" onclick="send_chat('{{ string.pcb_string.str }}')"><i class="fa fa-commenting-o" aria-hidden="true"></i>
-        </a></td>
+        </a><br/>
+        <i id="{{ string.pcb_string.str }}-fav" onclick="toggle_fav('{{ string.pcb_string.str }}')" 
+        class="fa {% if string.fav.id %} fa-heart{% else %} fa-heart-o{% endif %}" aria-hidden="true"></i></td>
     </div>
     {% endif %}
 </div>

@@ -113,6 +113,7 @@
 			for(let i=0; i<code.length; i++) {
 				buttons.item(i).setAttribute("colorChar",code.substr(i,1))
 			}
+			console.log(document.getElementById("orig_pcb_string").value, code)
 		}
 
 		function upvote(code) {
@@ -134,6 +135,24 @@
 				document.getElementById(code+"-up").style = "color: var(--notvoted-color)";
 				document.getElementById(code+"-down").style = "color: var(--downvoted-color)";
 				document.getElementById(code+"-votes").innerText = xmlHttp.responseText;	
+			};    		
+			xmlHttp.send( null );
+    		return xmlHttp.responseText;
+		}
+
+		function toggle_fav(code) {
+			var xmlHttp = new XMLHttpRequest();
+		    xmlHttp.open( "GET", "{{ url_for('api_fav', code='')}}/"+code ); // false for synchronous request
+			xmlHttp.onload = () => {
+				if(xmlHttp.responseText == "like"){				
+					document.getElementById(code+"-fav").classList.remove("fa-heart-o");	
+					document.getElementById(code+"-fav").classList.add("fa-heart");	
+				} else if(xmlHttp.responseText == "dislike") {
+					document.getElementById(code+"-fav").classList.remove("fa-heart");	
+					document.getElementById(code+"-fav").classList.add("fa-heart-o");	
+				} else {
+					alert(xmlHttp.responseText)
+				}
 			};    		
 			xmlHttp.send( null );
     		return xmlHttp.responseText;
@@ -195,6 +214,9 @@
 							<a class="nav-link" onclick="edit_code('')">
 								New
 							</a>
+						</li>
+						<li class="nav-item">
+							<a class ="nav-link fa fa-heart" href="{{ url_for('show_users_favorites', username=user) }}"aria-hidden="true"></a>	
 						</li>
 						{% endif %}
 						<li class="nav-item">
