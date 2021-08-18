@@ -55,10 +55,14 @@
     </div>
     {% if twitch %}
     <div class="col-md-1">
-        <td><a href="#" onclick="send_chat('{{ string.pcb_string.str }}')"><i class="fa fa-commenting-o" aria-hidden="true"></i>
-        </a><br/>
+        <i onclick="send_chat('{{ string.pcb_string.str }}')" class="fa fa-commenting-o" aria-hidden="true"></i>
+        <br/>
+        {% if string.pcb_string.name and '-' in string.pcb_string.name %}
+        <i onclick="send_anim('{{ string.pcb_string.name }}')" class="fa fa-film" aria-hidden="true"></i>
+        <br/>
+        {% endif %}
         <i id="{{ string.pcb_string.str }}-fav" onclick="toggle_fav('{{ string.pcb_string.str }}')" 
-        class="fa {% if string.fav.id %} fa-heart{% else %} fa-heart-o{% endif %}" aria-hidden="true"></i></td>
+        class="fa {% if string.fav.id %} fa-heart{% else %} fa-heart-o{% endif %}" aria-hidden="true"></i>
     </div>
     {% endif %}
 </div>

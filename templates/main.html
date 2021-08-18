@@ -32,6 +32,21 @@
 			}).then(()=>{overlay.style.display = "none";});
 	   	};
 
+		function send_anim (code) {
+			const overlay = document.getElementById("overlay")
+			overlay.style.display = "block";
+			const token = "{{ twitch }}";
+			const username = "{{ user }}";
+ 
+			const channel = "Platinenmacher";
+			const { chat } = new TwitchJs({ token, username });
+			chat.connect().then(() => {
+		   		chat.say(channel, "!pcba "+code.split('-')[0]).then(()=>{
+			  		chat.disconnect();
+		   		})
+			}).then(()=>{overlay.style.display = "none";});
+	   	};
+
 		function edit_code (code, name="") {
 			const editor = document.getElementById("editor");
 			editor.style.display = "block";
