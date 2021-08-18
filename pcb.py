@@ -277,13 +277,23 @@ def update_string():
         db_str.str = request.form.get('pcb_string')
         db.session.add(db_str)    
         db.session.commit()
-    return redirect(url_for('index'))
+    return redirect(request.referrer)
 
 @app.route('/api/alias/<alias>')
 def get_from_alias(alias):
     str = pcb_string.query.filter_by(name=alias).first()
     if(str):
         return str.str
+    else:
+        return make_response("", 404)
+
+@app.route('/api/animation/<alias>')
+def get_animation_frames(alias):
+    str = pcb_string.query.filter(pcb_string.name.like(alias+"-%")).first()
+    if(str):
+        user = str.username
+        anim_set = pcb_string.query.filter(pcb_string.username==user, pcb_string.name.ilike(alias+"-%")).order_by(pcb_string.name.asc()).all()
+        return json.dumps([ k.str for k in anim_set ])
     else:
         return make_response("", 404)
 
