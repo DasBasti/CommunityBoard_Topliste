@@ -204,7 +204,19 @@
 	  }
 	})
 	</script>
-
+	<script>
+		document.addEventListener('DOMContentLoaded', (event) => {
+			var xmlHttp = new XMLHttpRequest();
+		    xmlHttp.open( "GET", "{{ url_for('get_led_info', id=user)}}" ); // false for synchronous request
+			xmlHttp.onload = () => {
+				console.log(xmlHttp.responseText)
+				let led = document.getElementById("user_led");
+				console.log(JSON.parse(xmlHttp.responseText).color.toString(16))
+				led.style = "color: #"+JSON.parse(xmlHttp.responseText).color.toString(16);
+			};
+    		xmlHttp.send( null );
+		});		
+	</script>
   </head>
   <body>
     <div class="container-fluid">
@@ -232,6 +244,9 @@
 						</li>
 						<li class="nav-item">
 							<a class ="nav-link fa fa-heart" href="{{ url_for('show_users_favorites', username=user) }}"aria-hidden="true"></a>	
+						</li>
+						<li class="nav-item">
+							<a class="nav-link fa fa-circle" href="#" id="user_led"></a>
 						</li>
 						{% endif %}
 						<li class="nav-item">
