@@ -114,7 +114,7 @@ def index():
         .all())
     nl = []
     for t in res:
-        nl.append({"pcb_string": t, "vote": None})
+        nl.append({"pcb_string": t, "vote": None, "fav": None})
     return list_page(nl)
 
 @app.route('/u/<username>')
@@ -283,6 +283,9 @@ def update_string():
 def get_from_alias(alias):
     str = pcb_string.query.filter_by(name=alias).first()
     if(str):
+        str.counter += 1
+        db.session.add(str)
+        db.session.commit()
         return str.str
     else:
         return make_response("", 404)
