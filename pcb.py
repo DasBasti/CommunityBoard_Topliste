@@ -1,15 +1,15 @@
 from operator import index
-from flask import Flask, request, render_template, session, redirect, request, url_for
+from flask import Flask, request, render_template, session, redirect, request, url_for, jsonify
 from flask.helpers import make_response
 from flask_dance.contrib.twitch import make_twitch_blueprint, twitch
 
 from flask_sqlalchemy import SQLAlchemy
 import json, os
 
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import select
-from sqlalchemy.sql.functions import user
+from sqlalchemy.sql.functions import char_length, user
 from dotenv import load_dotenv
 from pprint import PrettyPrinter
 
@@ -81,6 +81,25 @@ class fav(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(100), index = True)
     str_id = db.Column(db.Integer, db.ForeignKey('pcb_string.id'))
+
+class led(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    owner = db.Column(db.String(100), index = True, unique=True)
+    color = db.Column(db.Integer)
+    animation = db.Column(db.String(100))
+    last_seen = db.Column(db.TIMESTAMP, server_default=db.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+
+    def toJson(self):
+        datestr = None
+        if self.last_seen: 
+            datestr = self.last_seen.strftime('%Y-%m-%d %H:%M:%S') 
+        return {
+        "id": self.id,
+        "color": self.color,
+        "owner": self.owner,
+        "animation": self.animation,
+        "last_seen": datestr
+        }
 
 def list_page(entries, pageusername="", template="main.html"):    
     if twitch.authorized and not session.get('user'):
@@ -309,6 +328,36 @@ def delete_string():
         db.session.commit()
     return redirect(request.referrer)
 
+@app.route('/panel', methods=['GET'])
+def read_whole_panel():
+    panel = led.query.all()
+    p = list()
+    for l in panel:
+        p.append(l.toJson())
+    return make_response(jsonify(p))
+
+@app.route('/panel/led/<id>', methods=['GET'])
+def get_led_info(id):
+    cur_led = led.query.filter(or_(led.id==id, led.owner==id)).first()
+    return make_response(cur_led.toJson())
+
+@app.route('/panel/led/<id>', methods=['POST'])
+def set_led_info(id):
+    # nur mit masterpasswort wenn gesetzt
+    if os.getenv("PANEL_SERVER_TOKEN") == request.form.get('auth'):
+        owner = request.form.get("owner")
+        cur_led = led.query.filter(led.id==id, led.owner==owner).first()
+        if(cur_led):
+            if request.form.get("color"):
+                cur_led.color = request.form.get("color")
+            cur_led.animation = request.form.get("animation")
+            db.session.add(cur_led)
+            db.session.commit()
+            return make_response("", 200)
+        else:
+            return make_response("User not Authorized", 401)    
+    else:
+        return make_response("Not Authorized", 401)
 
 if __name__ == '__main__':
     db.create_all()
