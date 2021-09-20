@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Platinenmacher Community Board Animation Toplist</title>
+
+    <meta name="description" content="Toplist für das PCB Projekt">
+    <meta name="author" content="Bastian Neumann">
+
+    <style>
+
+    </style>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script>
+    console.log(mqtt)
+    const client = mqtt.connect("wss://platinenmacher.tech/mqtt")
+    client.subscribe("pcb/all/stream/enc")
+    client.on('message', (topic, message) => {
+        const pcb = document.getElementById("pcbimage")
+        pcb.setAttribute("code", message.toString())
+        console.log('receive message：', topic, message.toString())
+      
+	  const ppos = [[75,25],[70,28.125],[65,31.25],[60,34.375],[55,37.5],[50,40.625],[45,43.75],[40,46.875],[70,21.875],[65,25],[60,28.125],[55,31.25],[50,34.375],[45,37.5],[40,40.625],[35,43.75],[65,18.75],[60,21.875],[55,25],[50,28.125],[45,31.25],[40,34.375],[35,37.5],[30,40.625],[60,15.625],[55,18.75],[50,21.875],[45,25],[40,28.125],[35,31.25],[30,34.375],[25,37.5],[55,12.5],[50,15.625],[45,18.75],[40,21.875],[35,25],[30,28.125],[25,31.25],[20,34.375],[50,9.375],[45,12.5],[40,15.625],[35,18.75],[30,21.875],[25,25],[20,28.125],[15,31.25],[45,6.25],[40,9.375],[35,12.5],[30,15.625],[25,18.75],[20,21.875],[15,25],[10,28.125],[40,3.125],[35,6.25],[30,9.375],[25,12.5],[20,15.625],[15,18.75],[10,21.875],[5,25]]
+	  const base_polygon = [[-5,0],[0,-3.125],[5,0],[0,3.125]] //[[x,y],...]
+	  const base_colors = {"w": "#fff", "s": "#000", "b": "#00f", "r": "#f00", "g": "#0f0", "y": "#ff0", "o": "#f70", "c": "#0ff", "m": "#f0f"}
+	  
+		let code = pcb.getAttribute("code")
+		code = (code.trim().toLowerCase().replace(/([^rgbmcyows])/g,"s") + Array(ppos.length).fill('s').join('')).substr(0,ppos.length)
+		var ctx = pcb.getContext('2d')
+		for(let i=0; i<code.length; i++) {
+		  ctx.fillStyle = base_colors[code.substr(i,1)]
+		  ctx.beginPath()
+		  let offset = ppos[i]
+		  for(let xy in base_polygon) {
+			if(xy<1) {
+			  ctx.moveTo((base_polygon[0][0]+offset[0])*3, (base_polygon[0][1]+offset[1])*3)
+			} else {
+			  ctx.lineTo((base_polygon[xy][0]+offset[0])*3, (base_polygon[xy][1]+offset[1])*3)
+			}
+		  }
+		  ctx.closePath()
+		  ctx.fill()
+		}
+	  })
+	</script>
+  </head>
+  <body>
+    <canvas id="pcbimage" width="240" height="150" code="gggggggggwgwggwggwggwgwggwgggwwggwggwgwggggwggwggogwggwggggggggg"></canvas>
+  </body>
