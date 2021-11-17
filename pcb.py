@@ -89,6 +89,13 @@ class led(db.Model):
     animation = db.Column(db.String(100))
     last_seen = db.Column(db.TIMESTAMP, server_default=db.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
+class board(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), index = True, unique=True)
+    owner = db.Column(db.String(100), index = True)
+    state = db.Column(db.String(6), index = True)
+    last_seen = db.Column(db.TIMESTAMP, server_default=db.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+
     def toJson(self):
         datestr = None
         if self.last_seen: 
@@ -115,8 +122,19 @@ def list_page(entries, pageusername="", template="main.html"):
         entries = entries, 
         twitch = twitch.access_token,
         user = username,
-        username = pageusername
+        username = pageusername,
+        boards_online = boards_online()
     )
+
+def boards_online():
+    all_boards = board.query.filter_by(state="online").all()
+    res = []
+    for this_board in all_boards:
+        res.append({"board":this_board.name})
+    
+    return {"count":len(all_boards),"list":res}
+
+
 @app.route('/')
 def index():
     username = ""
@@ -215,6 +233,23 @@ def api_upvote(code):
     votes = do_upvote(code)
     return make_response(str(votes), 200)
 
+@app.route('/api/boards/<string:board_id>/<string:status>')
+def api_board_status(board_id, status):
+    this_board = board.query.filter_by(name=board_id).first()
+    if not this_board:
+        this_board = board()
+        this_board.name = board_id
+    this_board.state = "off"
+    if status == "online":
+        this_board.state = "online"
+    db.session.add(this_board)
+    db.session.commit()
+    return make_response("OK", 200)
+
+@app.route('/api/boards')
+def api_boards():    
+    return jsonify(boards_online())
+
 @app.route('/api/fav/<code>')
 def api_fav(code):
     ret = "error"
@@ -232,7 +267,7 @@ def api_fav(code):
                 ret = "like"
             db.session.commit()
         else:
-            return "String not found"
+            return make_response("String not found", 404)
 
     return make_response(ret, 200)
 
@@ -346,7 +381,7 @@ def set_led_info(id):
     # nur mit masterpasswort wenn gesetzt
     if os.getenv("PANEL_SERVER_TOKEN") == request.form.get('auth'):
         owner = request.form.get("owner")
-        cur_led = led.query.filter(led.id==id, led.owner==owner).first()
+        cur_led = led.query.filter(or_(led.id==id, led.owner==id)).first()
         if(cur_led):
             if request.form.get("color"):
                 cur_led.color = request.form.get("color")
@@ -359,6 +394,8 @@ def set_led_info(id):
     else:
         return make_response("Not Authorized", 401)
 
+#endpoint top update last_seen
 if __name__ == '__main__':
     db.create_all()
-    app.run(host="0.0.0.0", debug = True)
+
+    app.run(host="0.0.0.0", port=8888, debug = True)
