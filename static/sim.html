@@ -15,10 +15,10 @@
     </style>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script>
-    console.log(mqtt)
-    const client = mqtt.connect("wss://platinenmacher.tech/mqtt")
-    client.subscribe("pcb/all/stream/enc")
-    client.on('message', (topic, message) => {
+      let timeout = 0
+    const show = (topic, message) => {
+
+      window.clearTimeout(timeout)
         const pcb = document.getElementById("pcbimage")
         pcb.setAttribute("code", message.toString())
         console.log('receive message：', topic, message.toString())
@@ -44,7 +44,19 @@
 		  ctx.closePath()
 		  ctx.fill()
 		}
-	  })
+	timeout=window.setTimeout(()=>{
+    const pcb = document.getElementById("pcbimage")
+    var ctx = pcb.getContext('2d')
+    ctx.clearRect(0,0,240,150)
+  }, 15000)
+  }
+
+
+
+    console.log(mqtt)
+    const client = mqtt.connect("wss://platinenmacher.tech/mqtt")
+    client.subscribe("pcb/all/stream/enc")
+    client.on('message', show)
 	</script>
   </head>
   <body>
