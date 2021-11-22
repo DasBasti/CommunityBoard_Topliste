@@ -1,0 +1,20 @@
+{
+    "username": "{{username}}",
+    "entries": [
+    {% for string in entries %}
+    {
+        "id": {{ string.pcb_string.id }},
+        "str": "{{ string.pcb_string.str }}",
+        "username":  "{{ string.pcb_string.username }}",
+        "counter":  {{ string.pcb_string.counter }},
+        "upvotes":  {{ string.pcb_string.upvotes }},
+        "last_seen":  "{{ string.pcb_string.last_seen }}",
+        "hidden":  "{{ string.pcb_string.hidden }}",
+        "name":  "{{ string.pcb_string.name }}",
+        "voted":  "{{ string.voted }}"
+        {% if string.fav.id %},"fav":  {{ string.fav.id }} {% endif %}
+    },
+    {% endfor %}
+    {}
+]
+}

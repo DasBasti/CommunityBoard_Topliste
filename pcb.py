@@ -70,17 +70,47 @@ class pcb_string(db.Model):
         self.str = str
         self.counter = 0
         self.upvotes = 0
-
+    
+    def toJson(self):
+        datestr = None
+        if self.last_seen: 
+            datestr = self.last_seen.strftime('%Y-%m-%d %H:%M:%S') 
+        return {
+        "id": self.id,
+        "username": self.username,
+        "str": self.str,
+        "counter": self.counter,
+        "upvotes": self.upvotes,
+        "last_seen": datestr,
+        "name": self.name,
+        "voted": self.voted,
+        #"fav": self.fav.id,
+        }
 class vote(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(100), index = True)
     str_id = db.Column(db.Integer, db.ForeignKey('pcb_string.id'))
     vote =  db.Column(db.Boolean, default=0)
 
+    def toJson(self):
+        return {
+            "id": self.id,
+            "username": self.username,
+            "str_id": self.str_id,
+            "vote": self.vote,
+        }
+
 class fav(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(100), index = True)
     str_id = db.Column(db.Integer, db.ForeignKey('pcb_string.id'))
+
+    def toJson(self):
+        return {
+            "id": self.id,
+            "username": self.username,
+            "str_id": self.str_id
+        }
 
 class led(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -102,9 +132,7 @@ class board(db.Model):
             datestr = self.last_seen.strftime('%Y-%m-%d %H:%M:%S') 
         return {
         "id": self.id,
-        "color": self.color,
         "owner": self.owner,
-        "animation": self.animation,
         "last_seen": datestr
         }
 
@@ -374,7 +402,10 @@ def read_whole_panel():
 @app.route('/panel/led/<id>', methods=['GET'])
 def get_led_info(id):
     cur_led = led.query.filter(or_(led.id==id, led.owner==id)).first()
-    return make_response(cur_led.toJson())
+    if cur_led:
+        return make_response(jsonify({"color":cur_led.color}))
+    else:
+        return make_response("not Found", 404)
 
 @app.route('/panel/led/<id>', methods=['POST'])
 def set_led_info(id):
@@ -393,6 +424,30 @@ def set_led_info(id):
             return make_response("User not Authorized", 401)    
     else:
         return make_response("Not Authorized", 401)
+
+@app.route('/api/list')
+def get_list_of_pcb_strings():
+    if "page" in request.args:
+        page = int(request.args["page"])
+    else:
+        page = 1
+    if page < 1:
+        page = 1
+    if "num" in request.args:
+        num = int(request.args["num"])
+    else:
+        num = 20
+    start = (page-1)*num
+    out = {"start": start, "elements": []}
+    if session.get('user'):
+        username = session.get('user')[0]['display_name']
+        subquery = select(vote.vote).where(and_(vote.str_id == pcb_string.id, vote.username==username)).correlate(pcb_string).label("voted")
+        q=(db.session.query(pcb_string, subquery, fav).join(fav, and_(fav.username==username, fav.str_id==pcb_string.id), isouter=True)
+            .order_by(pcb_string.upvotes.desc(), pcb_string.counter.desc(), pcb_string.last_seen.desc()).offset(start).limit(num)
+        )
+    response =  make_response(render_template("list.json", entries=q.all(), username=username))
+    response.headers['Content-Type'] = 'application/json'
+    return response
 
 #endpoint top update last_seen
 if __name__ == '__main__':

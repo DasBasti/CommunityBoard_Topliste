@@ -1,53 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Platinenmacher Community Board Animation Toplist</title>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <meta name="description" content="Toplist für das PCB Projekt">
-    <meta name="author" content="Bastian Neumann">
+	<title>Platinenmacher Community Board Animation Toplist</title>
 
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/font-awesome.min.css') }}" rel="stylesheet">
-	
+	<meta name="description" content="Toplist für das PCB Projekt">
+	<meta name="author" content="Bastian Neumann">
+
+	<link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='css/font-awesome.min.css') }}" rel="stylesheet">
+
 	{% if twitch %}
 	<script src="{{ url_for('static', filename='twitch.js') }}"></script>
 	<script>
-	   	function send_chat (code) {
+		function send_chat(code) {
 			const overlay = document.getElementById("overlay")
 			overlay.style.display = "block";
 			const token = "{{ twitch }}";
 			const username = "{{ user }}";
- 
+
 			const channel = "Platinenmacher";
 			const { chat } = new TwitchJs({ token, username });
 			chat.connect().then(() => {
-		   		chat.say(channel, "!pcb "+code).then(()=>{
-			  		chat.disconnect();
-		   		})
-			}).then(()=>{overlay.style.display = "none";});
-	   	};
+				chat.say(channel, "!pcb " + code).then(() => {
+					chat.disconnect();
+				})
+			}).then(() => { overlay.style.display = "none"; });
+		};
 
-		function send_anim (code) {
+		function send_anim(code) {
 			const overlay = document.getElementById("overlay")
 			overlay.style.display = "block";
 			const token = "{{ twitch }}";
 			const username = "{{ user }}";
- 
+
 			const channel = "Platinenmacher";
 			const { chat } = new TwitchJs({ token, username });
 			chat.connect().then(() => {
-		   		chat.say(channel, "!pcba "+code.split('-')[0]).then(()=>{
-			  		chat.disconnect();
-		   		})
-			}).then(()=>{overlay.style.display = "none";});
-	   	};
+				chat.say(channel, "!pcba " + code.split('-')[0]).then(() => {
+					chat.disconnect();
+				})
+			}).then(() => { overlay.style.display = "none"; });
+		};
 
-		function edit_code (code, name="") {
+		function edit_code(code, name = "") {
 			const editor = document.getElementById("editor");
 			editor.style.display = "block";
 
@@ -60,251 +61,279 @@
 			document.getElementById("orig_pcb_string").value = code
 
 			if (code == "") {
-				document.getElementById('save_button').style.display='none'
-				document.getElementById('send_button').style.display='block'
-				document.getElementById('name').style.display='none'
+				document.getElementById('save_button').style.display = 'none'
+				document.getElementById('send_button').style.display = 'block'
+				document.getElementById('name').style.display = 'none'
 			} else {
-				document.getElementById('save_button').style.display='block'
-				document.getElementById('send_button').style.display='none'
+				document.getElementById('save_button').style.display = 'block'
+				document.getElementById('send_button').style.display = 'none'
 			}
 
-			function outputChars(){ // Ausgabe !pcb...
+			function outputChars() { // Ausgabe !pcb...
 				let v = ""
-				for(button of buttons) {
-					v+= button.getAttribute("colorChar")
+				for (button of buttons) {
+					v += button.getAttribute("colorChar")
 				}
 				document.getElementById("output_str").value = "!pcb " + v
 				document.getElementById("pcb_string").value = v
 			}
 
-			let i=0
-			for(let button of buttons) { // Initialisierung LED's
-				button.setAttribute("colorChar","s");
-				button.setAttribute("pos",i++);
-				button.addEventListener("mousedown", function() {
+			let i = 0
+			for (let button of buttons) { // Initialisierung LED's
+				button.setAttribute("colorChar", "s");
+				button.setAttribute("pos", i++);
+				button.addEventListener("mousedown", function () {
 					clicked = true
-					this.setAttribute("colorChar",selcolor)
+					this.setAttribute("colorChar", selcolor)
 				})
-				document.addEventListener("mouseup", function() {
+				document.addEventListener("mouseup", function () {
 					clicked = false
 					outputChars()
 				})
-				button.addEventListener("mouseenter", function() {
-					if(clicked) {
-						this.setAttribute("colorChar",selcolor)
+				button.addEventListener("mouseenter", function () {
+					if (clicked) {
+						this.setAttribute("colorChar", selcolor)
 					}
 				})
 			}
 
-			i=0
-			for(let button of cbuttons) { // Initialisierung Farbauswahl
-				button.addEventListener("click", function() {
-					if(lcb) {
+			i = 0
+			for (let button of cbuttons) { // Initialisierung Farbauswahl
+				button.addEventListener("click", function () {
+					if (lcb) {
 						lcb.classList.remove("selected")
 					}
 					lcb = this
 					selcolor = lcb.getAttribute("colorChar")
 					lcb.classList.add("selected")
 				})
-				button.addEventListener("dblclick", function() {
-					for(let button0 of buttons) {
-						button0.setAttribute("colorChar",button.getAttribute("colorChar"))
+				button.addEventListener("dblclick", function () {
+					for (let button0 of buttons) {
+						button0.setAttribute("colorChar", button.getAttribute("colorChar"))
 					}
 				})
-				if(i++ == 0) {
+				if (i++ == 0) {
 					button.click()
 				}
 			}
-				
+
 			outputChars()
 			if (name) {
-			document.getElementById("output_name").value = name;
+				document.getElementById("output_name").value = name;
 			} else {
 				document.getElementById("output_name").value = "";
 			}
 			document.getElementById("pcb_string").value = code;
 
-			code = (code.trim().toLowerCase().replace(/([^rgbmcywso])/g,"s") + Array(64).fill('s').join('')).substr(0,64) // ungültige Farben in s ändern und auf 8x8 auffüllen
-			for(let i=0; i<code.length; i++) {
-				buttons.item(i).setAttribute("colorChar",code.substr(i,1))
+			code = (code.trim().toLowerCase().replace(/([^rgbmcywso])/g, "s") + Array(64).fill('s').join('')).substr(0, 64) // ungültige Farben in s ändern und auf 8x8 auffüllen
+			for (let i = 0; i < code.length; i++) {
+				buttons.item(i).setAttribute("colorChar", code.substr(i, 1))
 			}
 			console.log(document.getElementById("orig_pcb_string").value, code)
 		}
 
 		function upvote(code) {
 			var xmlHttp = new XMLHttpRequest();
-		    xmlHttp.open( "GET", "{{ url_for('api_upvote', code='')}}/"+code ); // false for synchronous request
+			xmlHttp.open("GET", "{{ url_for('api_upvote', code='')}}/" + code); // false for synchronous request
 			xmlHttp.onload = () => {
-				document.getElementById(code+"-up").style = "color: var(--upvoted-color)";
-				document.getElementById(code+"-down").style = "color: var(--notvoted-color)";
-				document.getElementById(code+"-votes").innerText = xmlHttp.responseText;	
+				document.getElementById(code + "-up").style = "color: var(--upvoted-color)";
+				document.getElementById(code + "-down").style = "color: var(--notvoted-color)";
+				document.getElementById(code + "-votes").innerText = xmlHttp.responseText;
 			};
-    		xmlHttp.send( null );
-    		return xmlHttp.responseText;
+			xmlHttp.send(null);
+			return xmlHttp.responseText;
 		}
 
 		function downvote(code) {
 			var xmlHttp = new XMLHttpRequest();
-		    xmlHttp.open( "GET", "{{ url_for('api_downvote', code='')}}/"+code ); // false for synchronous request
+			xmlHttp.open("GET", "{{ url_for('api_downvote', code='')}}/" + code); // false for synchronous request
 			xmlHttp.onload = () => {
-				document.getElementById(code+"-up").style = "color: var(--notvoted-color)";
-				document.getElementById(code+"-down").style = "color: var(--downvoted-color)";
-				document.getElementById(code+"-votes").innerText = xmlHttp.responseText;	
-			};    		
-			xmlHttp.send( null );
-    		return xmlHttp.responseText;
+				document.getElementById(code + "-up").style = "color: var(--notvoted-color)";
+				document.getElementById(code + "-down").style = "color: var(--downvoted-color)";
+				document.getElementById(code + "-votes").innerText = xmlHttp.responseText;
+			};
+			xmlHttp.send(null);
+			return xmlHttp.responseText;
 		}
 
 		function toggle_fav(code) {
 			var xmlHttp = new XMLHttpRequest();
-		    xmlHttp.open( "GET", "{{ url_for('api_fav', code='')}}/"+code ); // false for synchronous request
+			xmlHttp.open("GET", "{{ url_for('api_fav', code='')}}/" + code); // false for synchronous request
 			xmlHttp.onload = () => {
-				if(xmlHttp.responseText == "like"){				
-					document.getElementById(code+"-fav").classList.remove("fa-heart-o");	
-					document.getElementById(code+"-fav").classList.add("fa-heart");	
-				} else if(xmlHttp.responseText == "dislike") {
-					document.getElementById(code+"-fav").classList.remove("fa-heart");	
-					document.getElementById(code+"-fav").classList.add("fa-heart-o");	
+				if (xmlHttp.responseText == "like") {
+					document.getElementById(code + "-fav").classList.remove("fa-heart-o");
+					document.getElementById(code + "-fav").classList.add("fa-heart");
+				} else if (xmlHttp.responseText == "dislike") {
+					document.getElementById(code + "-fav").classList.remove("fa-heart");
+					document.getElementById(code + "-fav").classList.add("fa-heart-o");
 				} else {
 					alert(xmlHttp.responseText)
 				}
-			};    		
-			xmlHttp.send( null );
-    		return xmlHttp.responseText;
+			};
+			xmlHttp.send(null);
+			return xmlHttp.responseText;
 		}
 
 	</script>
- {% endif %}
+	{% endif %}
 
- <script>
-	document.addEventListener('DOMContentLoaded', (event) => {
-	  const prevPics = document.querySelectorAll("canvas[code]")
-	  const ppos = [[75,25],[70,28.125],[65,31.25],[60,34.375],[55,37.5],[50,40.625],[45,43.75],[40,46.875],[70,21.875],[65,25],[60,28.125],[55,31.25],[50,34.375],[45,37.5],[40,40.625],[35,43.75],[65,18.75],[60,21.875],[55,25],[50,28.125],[45,31.25],[40,34.375],[35,37.5],[30,40.625],[60,15.625],[55,18.75],[50,21.875],[45,25],[40,28.125],[35,31.25],[30,34.375],[25,37.5],[55,12.5],[50,15.625],[45,18.75],[40,21.875],[35,25],[30,28.125],[25,31.25],[20,34.375],[50,9.375],[45,12.5],[40,15.625],[35,18.75],[30,21.875],[25,25],[20,28.125],[15,31.25],[45,6.25],[40,9.375],[35,12.5],[30,15.625],[25,18.75],[20,21.875],[15,25],[10,28.125],[40,3.125],[35,6.25],[30,9.375],[25,12.5],[20,15.625],[15,18.75],[10,21.875],[5,25]]
-	  const base_polygon = [[-5,0],[0,-3.125],[5,0],[0,3.125]] //[[x,y],...]
-	  const base_colors = {"w": "#fff", "s": "#000", "b": "#00f", "r": "#f00", "g": "#0f0", "y": "#ff0", "o": "#f70", "c": "#0ff", "m": "#f0f"}
-	  
-	  for(let pp of prevPics) {
-		let code = pp.getAttribute("code")
-		code = (code.trim().toLowerCase().replace(/([^rgbmcyows])/g,"s") + Array(ppos.length).fill('s').join('')).substr(0,ppos.length)
-		var ctx = pp.getContext('2d')
-		for(let i=0; i<code.length; i++) {
-		  ctx.fillStyle = base_colors[code.substr(i,1)]
-		  ctx.beginPath()
-		  let offset = ppos[i]
-		  for(let xy in base_polygon) {
-			if(xy<1) {
-			  ctx.moveTo((base_polygon[0][0]+offset[0])*3, (base_polygon[0][1]+offset[1])*3)
-			} else {
-			  ctx.lineTo((base_polygon[xy][0]+offset[0])*3, (base_polygon[xy][1]+offset[1])*3)
-			}
-		  }
-		  ctx.closePath()
-		  ctx.fill()
-		}
-	  }
-	})
-	</script>
 	<script>
 		document.addEventListener('DOMContentLoaded', (event) => {
 			var xmlHttp = new XMLHttpRequest();
-		    xmlHttp.open( "GET", "{{ url_for('get_led_info', id=user)}}" ); // false for synchronous request
+			xmlHttp.open("GET", "{{ url_for('get_led_info', id=user)}}"); // false for synchronous request
 			xmlHttp.onload = () => {
 				console.log(xmlHttp.responseText)
 				let led = document.getElementById("user_led");
 				console.log(JSON.parse(xmlHttp.responseText).color.toString(16))
-				led.style = "color: #"+JSON.parse(xmlHttp.responseText).color.toString(16);
+				led.style = "color: #" + JSON.parse(xmlHttp.responseText).color.toString(16);
 			};
-    		xmlHttp.send( null );
-		});		
+			xmlHttp.send(null);
+		});
 	</script>
-  </head>
-  <body>
-    <div class="container-fluid">
-	<div class="row">
-		<div class="col-md-12">
-			<nav class="navbar navbar-expand navbar-light background">
-				 
-				<a class="navbar-brand" href="{{ url_for('index') }}">!PCB Strings</a>
-				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-					<ul class="navbar-nav mr-auto">
-						<li class="nav-item active">
-							 <a class="nav-link" href="{{ url_for('index') }}">Liste <span class="sr-only">(current)</span></a>
-						</li>
-						{% if twitch %}
-						<li class="nav-item">
-							<a class="nav-link" href="{{ url_for('show_users_list', username=user) }}">{{ user }}</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" onclick="edit_code('')">
-								New
-							</a>
-						</li>
-						<li class="nav-item">
-							<a class ="nav-link fa fa-heart" href="{{ url_for('show_users_favorites', username=user) }}"aria-hidden="true"></a>	
-						</li>
-						<li class="nav-item">
-							<a class="nav-link fa fa-circle" href="#" id="user_led"></a>
-						</li>
-						{% endif %}
-						<li class="nav-item">
+	<script>
+
+		document.addEventListener('DOMContentLoaded', (event) => {
+			var listJson = new XMLHttpRequest();
+			let liste = document.getElementById("liste")
+			let list_element = document.getElementById("list-element");
+			listJson.open("GET", "https://platinenmacher.tech/pcb/api/list?page=1&num=5");
+			listJson.onload = () => {
+				console.log("request done")
+				content = JSON.parse(listJson.responseText)
+				content["entries"].forEach((entry) => {
+					let new_element = list_element.cloneNode(true);
+					new_element.querySelector("#pcb-string-votes").innerText = entry.upvotes;
+					new_element.querySelector("#pcb-string-name").innerText = entry.name
+					new_element.querySelector("#pcb-string-counter").innerText = entry.counter
+					//new_element.querySelector("#pcb-string-last_seen").innerText = entry.last_seen
+					new_element.querySelector("#pcb-string-str").setAttribute("code", entry.str);
+					new_element.style = "";
+					liste.appendChild(new_element);
+				})
+
+
+				const prevPics = document.querySelectorAll("canvas[code]")
+				const ppos = [[75, 25], [70, 28.125], [65, 31.25], [60, 34.375], [55, 37.5], [50, 40.625], [45, 43.75], [40, 46.875], [70, 21.875], [65, 25], [60, 28.125], [55, 31.25], [50, 34.375], [45, 37.5], [40, 40.625], [35, 43.75], [65, 18.75], [60, 21.875], [55, 25], [50, 28.125], [45, 31.25], [40, 34.375], [35, 37.5], [30, 40.625], [60, 15.625], [55, 18.75], [50, 21.875], [45, 25], [40, 28.125], [35, 31.25], [30, 34.375], [25, 37.5], [55, 12.5], [50, 15.625], [45, 18.75], [40, 21.875], [35, 25], [30, 28.125], [25, 31.25], [20, 34.375], [50, 9.375], [45, 12.5], [40, 15.625], [35, 18.75], [30, 21.875], [25, 25], [20, 28.125], [15, 31.25], [45, 6.25], [40, 9.375], [35, 12.5], [30, 15.625], [25, 18.75], [20, 21.875], [15, 25], [10, 28.125], [40, 3.125], [35, 6.25], [30, 9.375], [25, 12.5], [20, 15.625], [15, 18.75], [10, 21.875], [5, 25]]
+				const base_polygon = [[-5, 0], [0, -3.125], [5, 0], [0, 3.125]] //[[x,y],...]
+				const base_colors = { "w": "#fff", "s": "#000", "b": "#00f", "r": "#f00", "g": "#0f0", "y": "#ff0", "o": "#f70", "c": "#0ff", "m": "#f0f" }
+
+				for (let pp of prevPics) {
+					let code = pp.getAttribute("code")
+					code = (code.trim().toLowerCase().replace(/([^rgbmcyows])/g, "s") + Array(ppos.length).fill('s').join('')).substr(0, ppos.length)
+					var ctx = pp.getContext('2d')
+					for (let i = 0; i < code.length; i++) {
+						ctx.fillStyle = base_colors[code.substr(i, 1)]
+						ctx.beginPath()
+						let offset = ppos[i]
+						for (let xy in base_polygon) {
+							if (xy < 1) {
+								ctx.moveTo((base_polygon[0][0] + offset[0]) * 3, (base_polygon[0][1] + offset[1]) * 3)
+							} else {
+								ctx.lineTo((base_polygon[xy][0] + offset[0]) * 3, (base_polygon[xy][1] + offset[1]) * 3)
+							}
+						}
+						ctx.closePath()
+						ctx.fill()
+					}
+				}
+			}
+			listJson.send(null);
+		});
+	</script>
+</head>
+
+<body>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-12">
+				<nav class="navbar navbar-expand navbar-light background">
+
+					<a class="navbar-brand" href="{{ url_for('index') }}">!PCB Strings</a>
+					<button class="navbar-toggler" type="button" data-toggle="collapse"
+						data-target="#bs-example-navbar-collapse-1">
+						<span class="navbar-toggler-icon"></span>
+					</button>
+					<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+						<ul class="navbar-nav mr-auto">
+							<li class="nav-item active">
+								<a class="nav-link" href="{{ url_for('index') }}">Liste <span
+										class="sr-only">(current)</span></a>
+							</li>
 							{% if twitch %}
-							<a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
-							{% else %}
-							<a class="nav-link" href="{{ url_for('login') }}">Login</a>
+							<li class="nav-item">
+								<a class="nav-link" href="{{ url_for('show_users_list', username=user) }}">{{ user
+									}}</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" onclick="edit_code('')">
+									New
+								</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link fa fa-heart"
+									href="{{ url_for('show_users_favorites', username=user) }}" aria-hidden="true"></a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link fa fa-circle" href="#" id="user_led"></a>
+							</li>
 							{% endif %}
+							<li class="nav-item">
+								{% if twitch %}
+								<a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+								{% else %}
+								<a class="nav-link" href="{{ url_for('login') }}">Login</a>
+								{% endif %}
+							</li>
+							<li class="nav-item">
+								<a class="nav-link fa fa-cubes" href="{{ url_for('static', filename='sim.html') }}"></a>
+							</li>
+							<li>
+								<a class="nav-link" href="#">{{boards_online.count}} Boards online</a>
+							</li>
+						</ul>
+					</div>
+				</nav>
+				<div id="stringlist">
+					{% include('string_list.html') %}
+				</div>
+				<div id="overlay"></div>
+				<div id="editor">
+					{% include('editor.html') %}
+				</div>
+				{% if 0 %}
+				<nav class="pagination-sm">
+					<ul class="pagination">
+						<li class="page-item">
+							<a class="page-link" href="#">Previous</a>
 						</li>
-						<li class="nav-item">
-							<a class="nav-link fa fa-cubes" href="{{ url_for('static', filename='sim.html') }}"></a>
+						<li class="page-item">
+							<a class="page-link" href="#">1</a>
 						</li>
-						<li>
-							<a class="nav-link" href="#">{{boards_online.count}} Boards online</a>
+						<li class="page-item">
+							<a class="page-link" href="#">2</a>
+						</li>
+						<li class="page-item">
+							<a class="page-link" href="#">3</a>
+						</li>
+						<li class="page-item">
+							<a class="page-link" href="#">4</a>
+						</li>
+						<li class="page-item">
+							<a class="page-link" href="#">5</a>
+						</li>
+						<li class="page-item">
+							<a class="page-link" href="#">Next</a>
 						</li>
 					</ul>
-				</div>
-			</nav>
-			<div id="stringlist">
-				{% include('string_list.html') %}
+				</nav>
+				{% endif %}
 			</div>
-			<div id="overlay"></div> 
-			<div id="editor">
-				{% include('editor.html') %}
-			</div> 
-			{% if 0 %}
-			<nav class="pagination-sm">
-				<ul class="pagination">
-					<li class="page-item">
-						<a class="page-link" href="#">Previous</a>
-					</li>
-					<li class="page-item">
-						<a class="page-link" href="#">1</a>
-					</li>
-					<li class="page-item">
-						<a class="page-link" href="#">2</a>
-					</li>
-					<li class="page-item">
-						<a class="page-link" href="#">3</a>
-					</li>
-					<li class="page-item">
-						<a class="page-link" href="#">4</a>
-					</li>
-					<li class="page-item">
-						<a class="page-link" href="#">5</a>
-					</li>
-					<li class="page-item">
-						<a class="page-link" href="#">Next</a>
-					</li>
-				</ul>
-			</nav>
-			{% endif %}
 		</div>
 	</div>
-</div>
 
-    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
-  </body>
+	<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+
 </html>

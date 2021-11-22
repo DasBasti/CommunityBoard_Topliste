@@ -1,69 +1,20 @@
-{% for string in entries %}
-<div class="row">
+<div id="liste"></div>
+<div id ="list-element" class="row" style="display: none;">
     <div class="col-md-1">
-        {% if twitch %}
-            <i id="{{ string.pcb_string.str }}-up" class="fa fa-arrow-up" aria-hidden="true"
-                onclick="upvote('{{ string.pcb_string.str }}')"
-            {% if string.voted is none or string.voted is false %}
-                    style="color: var(--notvoted-color)"
-            {% else %}
-                    style="color: var(--upvoted-color)"
-            {% endif %}
-            ></i>
-        {% endif %}
-
-        <b id="{{ string.pcb_string.str }}-votes">{{ string.pcb_string.upvotes }}</b>
-        
-        {% if twitch %}
-            <i id="{{ string.pcb_string.str }}-down" class="fa fa-arrow-down" aria-hidden="true"
-                onclick="downvote('{{ string.pcb_string.str }}')"
-            {% if string.voted is none or string.voted is true %}
-                    style="color: var(--notvoted-color)"
-            {% else %}
-                    style="color: var(--downvoted-color)"
-            {% endif %}
-            ></i>
-        {% endif %}
+        <b id="pcb-string-votes"></b>
         <br/>
-        {{ string.pcb_string.id }}
     </div>
     <div class="col-md-2">
-        <a href="{{ url_for('show_users_list', username=string.pcb_string.username) }}">{{ string.pcb_string.username }}</a>
+        <a href="#" id="pcb-string-username"></a>
     </div>
     <div class="col-md-3">
         <canvas width="240" height="150" 
-        {% if twitch %}
-        onclick="send_chat('{{ string.pcb_string.name or string.pcb_string.str }}')"
-        {% endif %}
-        code="{{ string.pcb_string.str }}"></canvas>
-        {{ string.pcb_string.name or ""}}
+        id="pcb-string-str"></canvas>
+        <div id="pcb-string-name"></div>
+    </div>
+    <div class="col-md-1" id="pcb-string-counter">
+        <small>zuletzt <div id="pcb-string-last_seen"></div></small>
     </div>
     <div class="col-md-1">
-        {{ string.pcb_string.counter }}
-        <small>zuletzt {{ string.pcb_string.last_seen }}</small>
     </div>
-    <div class="col-md-1">
-        {% if string.pcb_string.username ==  user %}
-        <a onclick="edit_code('{{ string.pcb_string.str }}', '{{ string.pcb_string.name or "" }}')">
-            Edit
-        </a>
-        <form method="POST" action="{{url_for('delete_string')}}">
-            <button type="button" onclick="if(confirm('wirklich löschen?')){submit()}">löschen</button>
-            <input type="hidden" name="orig_pcb_string" value="{{ string.pcb_string.str }}">
-        </form>
-        {% endif %}
-    </div>
-    {% if twitch %}
-    <div class="col-md-1">
-        <i onclick="send_chat('{{ string.pcb_string.str }}')" class="fa fa-commenting-o" aria-hidden="true"></i>
-        <br/>
-        {% if string.pcb_string.name and '-' in string.pcb_string.name %}
-        <i onclick="send_anim('{{ string.pcb_string.name }}')" class="fa fa-film" aria-hidden="true"></i>
-        <br/>
-        {% endif %}
-        <i id="{{ string.pcb_string.str }}-fav" onclick="toggle_fav('{{ string.pcb_string.str }}')" 
-        class="fa {% if string.fav.id %} fa-heart{% else %} fa-heart-o{% endif %}" aria-hidden="true"></i>
-    </div>
-    {% endif %}
 </div>
-{% endfor %}
