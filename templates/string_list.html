@@ -1,20 +1,44 @@
 <div id="liste"></div>
-<div id ="list-element" class="row" style="display: none;">
+<div id="list-element" class="row" style="display: none;">
     <div class="col-md-1">
+        <i id="string-vote-up" class="fa fa-arrow-up" aria-hidden="true" style="color: var(--notvoted-color)"></i>
         <b id="pcb-string-votes"></b>
-        <br/>
+        <i id="string-vote-down" class="fa fa-arrow-down" aria-hidden="true" style="color: var(--notvoted-color)"></i>
+
+
+        <br />
     </div>
     <div class="col-md-2">
         <a href="#" id="pcb-string-username"></a>
     </div>
     <div class="col-md-3">
-        <canvas width="240" height="150" 
-        id="pcb-string-str"></canvas>
+        <canvas width="240" height="150" id="pcb-string-str"></canvas>
         <div id="pcb-string-name"></div>
     </div>
-    <div class="col-md-1" id="pcb-string-counter">
-        <small>zuletzt <div id="pcb-string-last_seen"></div></small>
+    <div class="col-md-1">
+        <div id="pcb-string-counter"></div>
+        <small>zuletzt <div id="pcb-string-last-seen"></div></small>
     </div>
     <div class="col-md-1">
+        <div class="col-md-1">
+            <a id="pcb-string-edit" style="display: none;">
+                Edit
+            </a>
+            <form method="POST" action="{{url_for('delete_string')}}" id="pcb-string-delete" style="display: none;">
+                <button type="button" onclick="if(confirm('wirklich löschen?')){submit()}">löschen</button>
+                <input type="hidden" id="pcb-string-orig" name="orig_pcb_string" value="">
+            </form>
+
+            <div class="col-md-1">
+                <i id="pcb-string-send" class="fa fa-commenting-o" aria-hidden="true"></i>
+                <br />
+                
+                <i id="pcb-string-send-anim" class="fa fa-film" aria-hidden="true" style="display: none;"></i>
+                <br />
+                
+                <i id="pcb-string-fav" onclick=toggle_fav
+                    class="fa" aria-hidden="true"></i>
+            </div>
+
+        </div>
     </div>
-</div>

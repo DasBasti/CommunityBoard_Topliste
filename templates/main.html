@@ -18,7 +18,9 @@
 	{% if twitch %}
 	<script src="{{ url_for('static', filename='twitch.js') }}"></script>
 	<script>
-		function send_chat(code) {
+		function send_chat(event) {
+			const code = event.target.getAttribute("code");
+			const name = event.target.getAttribute("code-name");
 			const overlay = document.getElementById("overlay")
 			overlay.style.display = "block";
 			const token = "{{ twitch }}";
@@ -27,13 +29,19 @@
 			const channel = "Platinenmacher";
 			const { chat } = new TwitchJs({ token, username });
 			chat.connect().then(() => {
-				chat.say(channel, "!pcb " + code).then(() => {
+				let message = "!pcb " + code;
+				if (name) {
+					message = "!pcb " + name;
+				}
+				chat.say(channel, message).then(() => {
 					chat.disconnect();
 				})
 			}).then(() => { overlay.style.display = "none"; });
 		};
 
-		function send_anim(code) {
+		function send_anim(event) {
+			const code = event.target.getAttribute("code");
+			const name = event.target.getAttribute("code-name");
 			const overlay = document.getElementById("overlay")
 			overlay.style.display = "block";
 			const token = "{{ twitch }}";
@@ -42,13 +50,20 @@
 			const channel = "Platinenmacher";
 			const { chat } = new TwitchJs({ token, username });
 			chat.connect().then(() => {
-				chat.say(channel, "!pcba " + code.split('-')[0]).then(() => {
+				chat.say(channel, "!pcba " + name.split('-')[0]).then(() => {
 					chat.disconnect();
 				})
 			}).then(() => { overlay.style.display = "none"; });
 		};
 
-		function edit_code(code, name = "") {
+		function edit_code(event) {
+			if(event){
+			const code = event.target.getAttribute("code");
+			const name = event.target.getAttribute("code-name");
+			} else {
+				const code = "";
+				const name = "";
+			}
 			const editor = document.getElementById("editor");
 			editor.style.display = "block";
 
@@ -129,10 +144,12 @@
 			for (let i = 0; i < code.length; i++) {
 				buttons.item(i).setAttribute("colorChar", code.substr(i, 1))
 			}
-			console.log(document.getElementById("orig_pcb_string").value, code)
 		}
 
-		function upvote(code) {
+		function upvote(event) {
+			const code = event.target.getAttribute("data");
+			if (code === undefined)
+				return;
 			var xmlHttp = new XMLHttpRequest();
 			xmlHttp.open("GET", "{{ url_for('api_upvote', code='')}}/" + code); // false for synchronous request
 			xmlHttp.onload = () => {
@@ -144,7 +161,10 @@
 			return xmlHttp.responseText;
 		}
 
-		function downvote(code) {
+		function downvote(event) {
+			const code = event.target.getAttribute("data");
+			if (code === undefined)
+				return;
 			var xmlHttp = new XMLHttpRequest();
 			xmlHttp.open("GET", "{{ url_for('api_downvote', code='')}}/" + code); // false for synchronous request
 			xmlHttp.onload = () => {
@@ -174,41 +194,137 @@
 			return xmlHttp.responseText;
 		}
 
-	</script>
-	{% endif %}
-
-	<script>
 		document.addEventListener('DOMContentLoaded', (event) => {
 			var xmlHttp = new XMLHttpRequest();
 			xmlHttp.open("GET", "{{ url_for('get_led_info', id=user)}}"); // false for synchronous request
 			xmlHttp.onload = () => {
-				console.log(xmlHttp.responseText)
 				let led = document.getElementById("user_led");
-				console.log(JSON.parse(xmlHttp.responseText).color.toString(16))
 				led.style = "color: #" + JSON.parse(xmlHttp.responseText).color.toString(16);
 			};
 			xmlHttp.send(null);
 		});
 	</script>
+	{% endif %}
 	<script>
-
-		document.addEventListener('DOMContentLoaded', (event) => {
+		var page = 1;
+		var num = 10;
+		var selected_username = "";
+		const load_pcb_data = (event, _page = undefined, _num = undefined, filtername = undefined) => {
+			if (event && event.target.getAttribute("page")) {
+				_page = event.target.getAttribute("page");
+			}
+			if (event && event.target.getAttribute("num")) {
+				_num = event.target.getAttribute("num");
+			}
 			var listJson = new XMLHttpRequest();
 			let liste = document.getElementById("liste")
 			let list_element = document.getElementById("list-element");
-			listJson.open("GET", "https://platinenmacher.tech/pcb/api/list?page=1&num=5");
+			var url = "https://platinenmacher.tech/pcb/api/list?page="
+			if (_page) {
+				url += _page;
+			} else {
+				url += page;
+			}
+			url += "&num="
+			if (_num) {
+				url += _num;
+			}
+			else {
+				url += num;
+			}
+			if (filtername !== undefined) {
+				selected_username = filtername;
+				if (filtername !== "")
+					url += "&name=" + filtername;
+			} else if (selected_username != "") {
+				url += "&name=" + selected_username;
+			}
+			listJson.open("GET", url);
 			listJson.onload = () => {
-				console.log("request done")
+				liste.innerHTML = ""; // remove old list
 				content = JSON.parse(listJson.responseText)
 				content["entries"].forEach((entry) => {
-					let new_element = list_element.cloneNode(true);
-					new_element.querySelector("#pcb-string-votes").innerText = entry.upvotes;
-					new_element.querySelector("#pcb-string-name").innerText = entry.name
-					new_element.querySelector("#pcb-string-counter").innerText = entry.counter
-					//new_element.querySelector("#pcb-string-last_seen").innerText = entry.last_seen
-					new_element.querySelector("#pcb-string-str").setAttribute("code", entry.str);
-					new_element.style = "";
-					liste.appendChild(new_element);
+					if (entry.id) {
+						let new_element = list_element.cloneNode(true);
+						new_element.id = "pcb-" + entry.id;
+						new_element.querySelector("#pcb-string-votes").innerText = entry.upvotes;
+						new_element.querySelector("#pcb-string-votes").id = entry.str + "-votes";
+						new_element.querySelector("#pcb-string-name").innerText = entry.name;
+						new_element.querySelector("#pcb-string-username").innerText = entry.username;
+						new_element.querySelector("#pcb-string-counter").innerText = entry.counter;
+						if (entry.fav) {
+							new_element.querySelector("#pcb-string-fav").classList.add("fa-heart");
+						}
+						else {
+							new_element.querySelector("#pcb-string-fav").classList.add("fa-heart-o");
+						}
+						new_element.querySelector("#pcb-string-send").setAttribute("code", entry.str);
+						if (entry.name.includes("-")) {
+							new_element.querySelector("#pcb-string-send-anim").setAttribute("code-name", entry.name);
+							new_element.querySelector("#pcb-string-send-anim").style = "";
+						}
+						
+						const last_seen = new_element.querySelector("#pcb-string-last-seen");
+						if (last_seen) {
+							last_seen.innerText = entry.last_seen;
+						}
+						const pcb_canvas = new_element.querySelector("#pcb-string-str");
+						pcb_canvas.setAttribute("code", entry.str);
+						pcb_canvas.setAttribute("code-name", entry.name);
+
+						new_element.style = "";
+						const upvote_tag = new_element.querySelector("#string-vote-up");
+						upvote_tag.setAttribute("data", entry.str);
+						upvote_tag.id = entry.str + "-up";
+
+						const downvote_tag = new_element.querySelector("#string-vote-down");
+						downvote_tag.setAttribute("data", entry.str);
+						downvote_tag.id = entry.str + "-down";
+
+						{% if twitch %}
+						new_element.querySelector("#pcb-string-send-anim").onclick = send_anim;
+						new_element.querySelector("#pcb-string-send").onclick = send_chat;
+						pcb_canvas.onclick = send_chat;
+						upvote_tag.onclick = upvote;
+						downvote_tag.onclick = downvote;
+						{% endif %}
+
+						if (entry.voted === "True") {
+							upvote_tag.style = "color: var(--upvoted-color)"
+						}
+
+						if (entry.voted === "False") {
+							downvote_tag.style = "color: var(--downvoted-color)"
+						}
+
+						if (entry.username === content["username"]) {
+							const edit_link = new_element.querySelector("#pcb-string-edit")
+							edit_link.setAttribute("code", entry.str);
+							edit_link.setAttribute("code-name", entry.name);
+							edit_link.onclick = edit_code;
+							edit_link.style = "";
+
+							const string_delete_form = new_element.querySelector("#pcb-string-delete");
+							string_delete_form.style = "";
+
+							const string_delete_field = new_element.querySelector("#pcb-string-orig");
+							string_delete_field.value = entry.str;
+						}
+
+						liste.appendChild(new_element);
+					}
+					const pagination_item = document.querySelector(".page-item");
+					const parent = pagination_item.parentNode;
+					parent.innerHTML = "";
+					parent.appendChild(pagination_item);
+					for (i = 0; i < Math.ceil(content['total'] / num); i++) {
+						let new_page_item = pagination_item.cloneNode(true);
+						new_page_item.style = "";
+						new_page_item.querySelector(".page-link").innerText = i;
+						new_page_item.querySelector(".page-link").setAttribute("page", i);
+						new_page_item.onclick = (event) => { load_pcb_data(event) };
+						pagination_item.parentNode.appendChild(new_page_item);
+					}
 				})
 
 
@@ -238,7 +354,9 @@
 				}
 			}
 			listJson.send(null);
-		});
+		};
+		document.addEventListener('DOMContentLoaded', (e) => { load_pcb_data(null, page, num) });
+
 	</script>
 </head>
 
@@ -256,16 +374,17 @@
 					<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 						<ul class="navbar-nav mr-auto">
 							<li class="nav-item active">
-								<a class="nav-link" href="{{ url_for('index') }}">Liste <span
+								<a class="nav-link" href="#" onclick="load_pcb_data(null, page, num, '')">Liste <span
 										class="sr-only">(current)</span></a>
 							</li>
 							{% if twitch %}
 							<li class="nav-item">
-								<a class="nav-link" href="{{ url_for('show_users_list', username=user) }}">{{ user
+								<a class="nav-link" href="#" onclick="load_pcb_data(null, page, num, '{{ user
+								}}')">{{ user
 									}}</a>
 							</li>
 							<li class="nav-item">
-								<a class="nav-link" onclick="edit_code('')">
+								<a class="nav-link" onclick="edit_code()">
 									New
 								</a>
 							</li>
@@ -300,34 +419,14 @@
 				<div id="editor">
 					{% include('editor.html') %}
 				</div>
-				{% if 0 %}
-				<nav class="pagination-sm">
-					<ul class="pagination">
-						<li class="page-item">
-							<a class="page-link" href="#">Previous</a>
-						</li>
-						<li class="page-item">
-							<a class="page-link" href="#">1</a>
-						</li>
-						<li class="page-item">
-							<a class="page-link" href="#">2</a>
-						</li>
-						<li class="page-item">
-							<a class="page-link" href="#">3</a>
-						</li>
-						<li class="page-item">
-							<a class="page-link" href="#">4</a>
-						</li>
-						<li class="page-item">
-							<a class="page-link" href="#">5</a>
-						</li>
-						<li class="page-item">
-							<a class="page-link" href="#">Next</a>
-						</li>
-					</ul>
-				</nav>
-				{% endif %}
 			</div>
+			<nav class="pagination-sm">
+				<ul class="pagination">
+					<li class="page-item" style="display: none;">
+						<a class="page-link" href="#">1</a>
+					</li>
+				</ul>
+			</nav>
 		</div>
 	</div>
 

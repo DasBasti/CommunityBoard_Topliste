@@ -84,7 +84,7 @@ class pcb_string(db.Model):
         "last_seen": datestr,
         "name": self.name,
         "voted": self.voted,
-        #"fav": self.fav.id,
+        "fav": self.fav.id,
         }
 class vote(db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -450,13 +450,29 @@ def get_list_of_pcb_strings():
         num = 20
     start = (page-1)*num
     out = {"start": start, "elements": []}
+    if "name" in request.args:
+        namefilter = request.args["name"]
+        total = pcb_string.query.filter(pcb_string.username==namefilter).count()
+    else:
+        namefilter = "%"
+        total = pcb_string.query.count()
+    username = None
     if session.get('user'):
         username = session.get('user')[0]['display_name']
         subquery = select(vote.vote).where(and_(vote.str_id == pcb_string.id, vote.username==username)).correlate(pcb_string).label("voted")
-        q=(db.session.query(pcb_string, subquery, fav).join(fav, and_(fav.username==username, fav.str_id==pcb_string.id), isouter=True)
+        q=(db.session.query(pcb_string, subquery, fav).join(fav, and_(fav.username==username, fav.str_id==pcb_string.id), isouter=True).filter(pcb_string.username.like(namefilter))
             .order_by(pcb_string.upvotes.desc(), pcb_string.counter.desc(), pcb_string.last_seen.desc()).offset(start).limit(num)
         )
-    response =  make_response(render_template("list.json", entries=q.all(), username=username))
+        response =  make_response(render_template("list.json", entries=q.all(), username=username, total=total))
+    else:
+        res = (pcb_string.query.filter(pcb_string.username.like(namefilter))
+            .order_by(pcb_string.upvotes.desc(), pcb_string.counter.desc(), pcb_string.last_seen.desc())
+            .all())
+        nl = []
+        for t in res:
+            nl.append({"pcb_string": t, "vote": None, "fav": None})
+        response = make_response(render_template("list.json", entries=nl, total=total))
+
     response.headers['Content-Type'] = 'application/json'
     return response
 

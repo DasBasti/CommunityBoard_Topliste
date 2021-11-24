@@ -1,10 +1,11 @@
 {
     "username": "{{username}}",
+    "total": "{{total}}",
     "entries": [
     {% for string in entries %}
     {
         "id": {{ string.pcb_string.id }},
-        "str": "{{ string.pcb_string.str }}",
+        "str": "{{ string.pcb_string.str|replace('"', "&quot;")|replace("\\", " ") }}",
         "username":  "{{ string.pcb_string.username }}",
         "counter":  {{ string.pcb_string.counter }},
         "upvotes":  {{ string.pcb_string.upvotes }},
