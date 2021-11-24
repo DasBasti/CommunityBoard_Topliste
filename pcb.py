@@ -119,6 +119,19 @@ class led(db.Model):
     animation = db.Column(db.String(100))
     last_seen = db.Column(db.TIMESTAMP, server_default=db.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
+    def toJson(self):
+        datestr = None
+        if self.last_seen: 
+            datestr = self.last_seen.strftime('%Y-%m-%d %H:%M:%S') 
+        return {
+        "id": self.id,
+        "owner": self.owner,
+        "color": self.color,
+        "animation": self.animation,
+        "last_seen": datestr
+        }
+
+
 class board(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), index = True, unique=True)
@@ -139,7 +152,6 @@ class board(db.Model):
 def list_page(entries, pageusername="", template="main.html"):    
     if twitch.authorized and not session.get('user'):
         resp=twitch.get("users")
-        print(resp.content)
         data = json.loads(resp.content)
         if "data" in data:
             session['user'] = data['data']
@@ -216,7 +228,6 @@ def show_most_used():
 @app.route('/login')
 def login():
     login_url = url_for('twitch.login')
-    print(login_url)
     return redirect(login_url)
 
 @app.route('/logout')
