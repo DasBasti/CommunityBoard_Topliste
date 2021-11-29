@@ -57,9 +57,9 @@
 		};
 
 		function edit_code(event) {
-			if(event){
-			const code = event.target.getAttribute("code");
-			const name = event.target.getAttribute("code-name");
+			if (event) {
+				const code = event.target.getAttribute("code");
+				const name = event.target.getAttribute("code-name");
 			} else {
 				const code = "";
 				const name = "";
@@ -203,6 +203,23 @@
 			};
 			xmlHttp.send(null);
 		});
+
+		document.addEventListener('DOMContentLoaded', (event) => {
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.open("GET", "{{ url_for('api_boards')}}"); // false for synchronous request
+			xmlHttp.onload = () => {
+				const board_list = document.getElementById("board_list");
+				board_list.hidden=true;
+				let bl = JSON.parse(xmlHttp.responseText);
+				for(i=0;i<bl.count; i++){
+					let board_node = document.createElement("LI");
+					board_node.innerText = bl.list[i].board;
+					board_list.appendChild(board_node);
+				}
+			};
+			xmlHttp.send(null);
+		});
+
 	</script>
 	{% endif %}
 	<script>
@@ -212,9 +229,11 @@
 		const load_pcb_data = (event, _page = undefined, _num = undefined, filtername = undefined) => {
 			if (event && event.target.getAttribute("page")) {
 				_page = event.target.getAttribute("page");
+				page=_page;
 			}
 			if (event && event.target.getAttribute("num")) {
 				_num = event.target.getAttribute("num");
+				num=_num;
 			}
 			var listJson = new XMLHttpRequest();
 			let liste = document.getElementById("liste")
@@ -263,7 +282,7 @@
 							new_element.querySelector("#pcb-string-send-anim").setAttribute("code-name", entry.name);
 							new_element.querySelector("#pcb-string-send-anim").style = "";
 						}
-						
+
 						const last_seen = new_element.querySelector("#pcb-string-last-seen");
 						if (last_seen) {
 							last_seen.innerText = entry.last_seen;
@@ -319,9 +338,14 @@
 					parent.appendChild(pagination_item);
 					for (i = 0; i < Math.ceil(content['total'] / num); i++) {
 						let new_page_item = pagination_item.cloneNode(true);
-						new_page_item.style = "";
-						new_page_item.querySelector(".page-link").innerText = i;
-						new_page_item.querySelector(".page-link").setAttribute("page", i);
+						console.log(page)
+						if (i + 1 == page) {
+							new_page_item.style = "font-weight: bold;"
+						} else {
+							new_page_item.style = "";
+						}
+						new_page_item.querySelector(".page-link").innerText = i + 1;
+						new_page_item.querySelector(".page-link").setAttribute("page", i+1);
 						new_page_item.onclick = (event) => { load_pcb_data(event) };
 						pagination_item.parentNode.appendChild(new_page_item);
 					}
@@ -407,7 +431,10 @@
 								<a class="nav-link fa fa-cubes" href="{{ url_for('static', filename='sim.html') }}"></a>
 							</li>
 							<li>
-								<a class="nav-link" href="#">{{boards_online.count}} Boards online</a>
+								<a class="nav-link" onmouseenter="getElementById('board_list').hidden=false" href="#">{{boards_online.count}} Boards online</a>
+								<div style="position: relative;" ><ul id="board_list"  style="position: absolute; background: #fff;" onmouseleave="getElementById('board_list').hidden=true" >
+
+								</ul></div>
 							</li>
 						</ul>
 					</div>
@@ -421,7 +448,7 @@
 				</div>
 			</div>
 			<nav class="pagination-sm">
-				<ul class="pagination">
+				<ul class="pagination" style="flex-wrap: wrap;">
 					<li class="page-item" style="display: none;">
 						<a class="page-link" href="#">1</a>
 					</li>
