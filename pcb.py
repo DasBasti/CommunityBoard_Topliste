@@ -467,7 +467,7 @@ def get_list_of_pcb_strings():
     else:
         res = (pcb_string.query.filter(pcb_string.username.like(namefilter))
             .order_by(pcb_string.upvotes.desc(), pcb_string.counter.desc(), pcb_string.last_seen.desc())
-            .all())
+            .offset(start).limit(num))
         nl = []
         for t in res:
             nl.append({"pcb_string": t, "vote": None, "fav": None})
