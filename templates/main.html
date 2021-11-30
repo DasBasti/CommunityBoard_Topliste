@@ -2,464 +2,563 @@
 <html lang="en">
 
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-	<title>Platinenmacher Community Board Animation Toplist</title>
+    <title>Platinenmacher Community Board Animation Toplist</title>
 
-	<meta name="description" content="Toplist für das PCB Projekt">
-	<meta name="author" content="Bastian Neumann">
+    <meta name="description" content="Toplist für das PCB Projekt">
+    <meta name="author" content="Bastian Neumann">
 
-	<link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
-	<link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-	<link href="{{ url_for('static', filename='css/font-awesome.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/font-awesome.min.css') }}" rel="stylesheet"> 
+    {% if twitch %}
+    <script src="{{ url_for('static', filename='twitch.js') }}"></script>
+    <script>
+        function send_chat(event) {
+            let code = event;
+            let name = null;
+            if (event.target){
+            code = event.target.getAttribute("code");
+            name = event.target.getAttribute("code-name");
+        }
+            const overlay = document.getElementById("overlay")
+            overlay.style.display = "block";
+            const token = "{{ twitch }}";
+            const username = "{{ user }}";
 
-	{% if twitch %}
-	<script src="{{ url_for('static', filename='twitch.js') }}"></script>
-	<script>
-		function send_chat(event) {
-			const code = event.target.getAttribute("code");
-			const name = event.target.getAttribute("code-name");
-			const overlay = document.getElementById("overlay")
-			overlay.style.display = "block";
-			const token = "{{ twitch }}";
-			const username = "{{ user }}";
+            const channel = "Platinenmacher";
+            const {
+                chat
+            } = new TwitchJs({
+                token,
+                username
+            });
+            chat.connect().then(() => {
+                let message = "!pcb " + code;
+                if (name) {
+                    message = "!pcb " + name;
+                }
+                chat.say(channel, message).then(() => {
+                    chat.disconnect();
+                })
+            }).then(() => {
+                overlay.style.display = "none";
+            });
+        };
 
-			const channel = "Platinenmacher";
-			const { chat } = new TwitchJs({ token, username });
-			chat.connect().then(() => {
-				let message = "!pcb " + code;
-				if (name) {
-					message = "!pcb " + name;
-				}
-				chat.say(channel, message).then(() => {
-					chat.disconnect();
-				})
-			}).then(() => { overlay.style.display = "none"; });
-		};
+        function send_anim(event) {
+            const code = event.target.getAttribute("code");
+            const name = event.target.getAttribute("code-name");
+            const overlay = document.getElementById("overlay")
+            overlay.style.display = "block";
+            const token = "{{ twitch }}";
+            const username = "{{ user }}";
 
-		function send_anim(event) {
-			const code = event.target.getAttribute("code");
-			const name = event.target.getAttribute("code-name");
-			const overlay = document.getElementById("overlay")
-			overlay.style.display = "block";
-			const token = "{{ twitch }}";
-			const username = "{{ user }}";
+            const channel = "Platinenmacher";
+            const {
+                chat
+            } = new TwitchJs({
+                token,
+                username
+            });
+            chat.connect().then(() => {
+                chat.say(channel, "!pcba " + name.split('-')[0]).then(() => {
+                    chat.disconnect();
+                })
+            }).then(() => {
+                overlay.style.display = "none";
+            });
+        };
 
-			const channel = "Platinenmacher";
-			const { chat } = new TwitchJs({ token, username });
-			chat.connect().then(() => {
-				chat.say(channel, "!pcba " + name.split('-')[0]).then(() => {
-					chat.disconnect();
-				})
-			}).then(() => { overlay.style.display = "none"; });
-		};
+        function edit_code(event) {
+            let code = "";
+            let name = "";
+            if (event) {
+                console.log(event.target)
+                code = event.target.getAttribute("code");
+                name = event.target.getAttribute("code-name");
+            } 
+            const editor = document.getElementById("editor");
+            editor.style.display = "block";
 
-		function edit_code(event) {
-			if (event) {
-				const code = event.target.getAttribute("code");
-				const name = event.target.getAttribute("code-name");
-			} else {
-				const code = "";
-				const name = "";
-			}
-			const editor = document.getElementById("editor");
-			editor.style.display = "block";
+            const buttons = document.querySelectorAll("#virtualpcb button"); //PCB Leds
+            const cbuttons = document.querySelectorAll("#colorSelector button") // Farbauswahl-Buttons
 
-			const buttons = document.querySelectorAll("#virtualpcb button"); //PCB Leds
-			const cbuttons = document.querySelectorAll("#colorSelector button") // Farbauswahl-Buttons
+            let clicked = false // Start Paint
+            let selcolor = "" // Gewählte Farbe
+            let lcb //Start LED bei auswahl Paint
+            document.getElementById("orig_pcb_string").value = code
 
-			let clicked = false // Start Paint
-			let selcolor = "" // Gewählte Farbe
-			let lcb //Start LED bei auswahl Paint
-			document.getElementById("orig_pcb_string").value = code
+            if (code == "") {
+                document.getElementById('save_button').style.display = 'none'
+                document.getElementById('send_button').style.display = 'block'
+                document.getElementById('name').style.display = 'none'
+            } else {
+                document.getElementById('save_button').style.display = 'block'
+                document.getElementById('send_button').style.display = 'none'
+            }
 
-			if (code == "") {
-				document.getElementById('save_button').style.display = 'none'
-				document.getElementById('send_button').style.display = 'block'
-				document.getElementById('name').style.display = 'none'
-			} else {
-				document.getElementById('save_button').style.display = 'block'
-				document.getElementById('send_button').style.display = 'none'
-			}
+            function outputChars() { // Ausgabe !pcb...
+                let v = ""
+                for (button of buttons) {
+                    v += button.getAttribute("colorChar")
+                }
+                document.getElementById("output_str").value = "!pcb " + v
+                document.getElementById("pcb_string").value = v
+            }
 
-			function outputChars() { // Ausgabe !pcb...
-				let v = ""
-				for (button of buttons) {
-					v += button.getAttribute("colorChar")
-				}
-				document.getElementById("output_str").value = "!pcb " + v
-				document.getElementById("pcb_string").value = v
-			}
+            let i = 0
+            for (let button of buttons) { // Initialisierung LED's
+                button.setAttribute("colorChar", "s");
+                button.setAttribute("pos", i++);
+                button.addEventListener("mousedown", function() {
+                    clicked = true
+                    this.setAttribute("colorChar", selcolor)
+                })
+                document.addEventListener("mouseup", function() {
+                    clicked = false
+                    outputChars()
+                })
+                button.addEventListener("mouseenter", function() {
+                    if (clicked) {
+                        this.setAttribute("colorChar", selcolor)
+                    }
+                })
+            }
 
-			let i = 0
-			for (let button of buttons) { // Initialisierung LED's
-				button.setAttribute("colorChar", "s");
-				button.setAttribute("pos", i++);
-				button.addEventListener("mousedown", function () {
-					clicked = true
-					this.setAttribute("colorChar", selcolor)
-				})
-				document.addEventListener("mouseup", function () {
-					clicked = false
-					outputChars()
-				})
-				button.addEventListener("mouseenter", function () {
-					if (clicked) {
-						this.setAttribute("colorChar", selcolor)
-					}
-				})
-			}
+            i = 0
+            for (let button of cbuttons) { // Initialisierung Farbauswahl
+                button.addEventListener("click", function() {
+                    if (lcb) {
+                        lcb.classList.remove("selected")
+                    }
+                    lcb = this
+                    selcolor = lcb.getAttribute("colorChar")
+                    lcb.classList.add("selected")
+                })
+                button.addEventListener("dblclick", function() {
+                    for (let button0 of buttons) {
+                        button0.setAttribute("colorChar", button.getAttribute("colorChar"))
+                    }
+                })
+                if (i++ == 0) {
+                    button.click()
+                }
+            }
 
-			i = 0
-			for (let button of cbuttons) { // Initialisierung Farbauswahl
-				button.addEventListener("click", function () {
-					if (lcb) {
-						lcb.classList.remove("selected")
-					}
-					lcb = this
-					selcolor = lcb.getAttribute("colorChar")
-					lcb.classList.add("selected")
-				})
-				button.addEventListener("dblclick", function () {
-					for (let button0 of buttons) {
-						button0.setAttribute("colorChar", button.getAttribute("colorChar"))
-					}
-				})
-				if (i++ == 0) {
-					button.click()
-				}
-			}
+            outputChars()
+            if (name) {
+                document.getElementById("output_name").value = name;
+            } else {
+                document.getElementById("output_name").value = "";
+            }
+            document.getElementById("pcb_string").value = code;
 
-			outputChars()
-			if (name) {
-				document.getElementById("output_name").value = name;
-			} else {
-				document.getElementById("output_name").value = "";
-			}
-			document.getElementById("pcb_string").value = code;
+            code = (code.trim().toLowerCase().replace(/([^rgbmcywso])/g, "s") + Array(64).fill('s').join('')).substr(0, 64) // ungültige Farben in s ändern und auf 8x8 auffüllen
+            for (let i = 0; i < code.length; i++) {
+                buttons.item(i).setAttribute("colorChar", code.substr(i, 1))
+            }
+        }
 
-			code = (code.trim().toLowerCase().replace(/([^rgbmcywso])/g, "s") + Array(64).fill('s').join('')).substr(0, 64) // ungültige Farben in s ändern und auf 8x8 auffüllen
-			for (let i = 0; i < code.length; i++) {
-				buttons.item(i).setAttribute("colorChar", code.substr(i, 1))
-			}
-		}
+        function upvote(event) {
+            const code = event.target.getAttribute("data");
+            if (code === undefined)
+                return;
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", "{{ url_for('api_upvote', code='')}}/" + code); // false for synchronous request
+            xmlHttp.onload = () => {
+                document.getElementById(code + "-up").style = "color: var(--upvoted-color)";
+                document.getElementById(code + "-down").style = "color: var(--notvoted-color)";
+                document.getElementById(code + "-votes").innerText = xmlHttp.responseText;
+            };
+            xmlHttp.send(null);
+            return xmlHttp.responseText;
+        }
 
-		function upvote(event) {
-			const code = event.target.getAttribute("data");
-			if (code === undefined)
-				return;
-			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.open("GET", "{{ url_for('api_upvote', code='')}}/" + code); // false for synchronous request
-			xmlHttp.onload = () => {
-				document.getElementById(code + "-up").style = "color: var(--upvoted-color)";
-				document.getElementById(code + "-down").style = "color: var(--notvoted-color)";
-				document.getElementById(code + "-votes").innerText = xmlHttp.responseText;
-			};
-			xmlHttp.send(null);
-			return xmlHttp.responseText;
-		}
+        function downvote(event) {
+            const code = event.target.getAttribute("data");
+            if (code === undefined)
+                return;
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", "{{ url_for('api_downvote', code='')}}/" + code); // false for synchronous request
+            xmlHttp.onload = () => {
+                document.getElementById(code + "-up").style = "color: var(--notvoted-color)";
+                document.getElementById(code + "-down").style = "color: var(--downvoted-color)";
+                document.getElementById(code + "-votes").innerText = xmlHttp.responseText;
+            };
+            xmlHttp.send(null);
+            return xmlHttp.responseText;
+        }
 
-		function downvote(event) {
-			const code = event.target.getAttribute("data");
-			if (code === undefined)
-				return;
-			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.open("GET", "{{ url_for('api_downvote', code='')}}/" + code); // false for synchronous request
-			xmlHttp.onload = () => {
-				document.getElementById(code + "-up").style = "color: var(--notvoted-color)";
-				document.getElementById(code + "-down").style = "color: var(--downvoted-color)";
-				document.getElementById(code + "-votes").innerText = xmlHttp.responseText;
-			};
-			xmlHttp.send(null);
-			return xmlHttp.responseText;
-		}
+        function toggle_fav(code) {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", "{{ url_for('api_fav', code='')}}/" + code); // false for synchronous request
+            xmlHttp.onload = () => {
+                if (xmlHttp.responseText == "like") {
+                    document.getElementById(code + "-fav").classList.remove("fa-heart-o");
+                    document.getElementById(code + "-fav").classList.add("fa-heart");
+                } else if (xmlHttp.responseText == "dislike") {
+                    document.getElementById(code + "-fav").classList.remove("fa-heart");
+                    document.getElementById(code + "-fav").classList.add("fa-heart-o");
+                } else {
+                    alert(xmlHttp.responseText)
+                }
+            };
+            xmlHttp.send(null);
+            return xmlHttp.responseText;
+        }
 
-		function toggle_fav(code) {
-			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.open("GET", "{{ url_for('api_fav', code='')}}/" + code); // false for synchronous request
-			xmlHttp.onload = () => {
-				if (xmlHttp.responseText == "like") {
-					document.getElementById(code + "-fav").classList.remove("fa-heart-o");
-					document.getElementById(code + "-fav").classList.add("fa-heart");
-				} else if (xmlHttp.responseText == "dislike") {
-					document.getElementById(code + "-fav").classList.remove("fa-heart");
-					document.getElementById(code + "-fav").classList.add("fa-heart-o");
-				} else {
-					alert(xmlHttp.responseText)
-				}
-			};
-			xmlHttp.send(null);
-			return xmlHttp.responseText;
-		}
+        document.addEventListener('DOMContentLoaded', (event) => {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", "{{ url_for('get_led_info', id=user)}}"); // false for synchronous request
+            xmlHttp.onload = () => {
+                let led = document.getElementById("user_led");
+                led.style = "color: #" + JSON.parse(xmlHttp.responseText).color.toString(16);
+            };
+            xmlHttp.send(null);
+        });
 
-		document.addEventListener('DOMContentLoaded', (event) => {
-			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.open("GET", "{{ url_for('get_led_info', id=user)}}"); // false for synchronous request
-			xmlHttp.onload = () => {
-				let led = document.getElementById("user_led");
-				led.style = "color: #" + JSON.parse(xmlHttp.responseText).color.toString(16);
-			};
-			xmlHttp.send(null);
-		});
+        document.addEventListener('DOMContentLoaded', (event) => {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", "{{ url_for('api_boards')}}"); // false for synchronous request
+            xmlHttp.onload = () => {
+                const board_list = document.getElementById("board_list");
+                //board_list.hidden=true;
+                let bl = JSON.parse(xmlHttp.responseText);
+                for (i = 0; i < bl.count; i++) {
+                    let board_node = document.createElement("LI");
+                    board_node.innerText = bl.list[i].board;
+                    board_list.appendChild(board_node);
+                }
+            };
+            xmlHttp.send(null);
+        });
+    </script>
+    {% endif %}
+    <script>
+        var page = 1;
+        var num = 10;
+        var selected_username = "";
+        const load_pcb_data = (event, _page = undefined, _num = undefined, filtername = undefined) => {
+            if (event && event.target.getAttribute("page")) {
+                _page = event.target.getAttribute("page");
+                page = _page;
+            }
+            if (event && event.target.getAttribute("num")) {
+                _num = event.target.getAttribute("num");
+                num = _num;
+            }
+            var listJson = new XMLHttpRequest();
+            let liste = document.getElementById("liste")
+            let list_element = document.getElementById("list-element");
+            var url = "https://platinenmacher.tech/pcb/api/list?page="
+            if (_page) {
+                url += _page;
+            } else {
+                url += page;
+            }
+            url += "&num="
+            if (_num) {
+                url += _num;
+            } else {
+                url += num;
+            }
+            if (filtername !== undefined) {
+                selected_username = filtername;
+                if (filtername !== "")
+                    url += "&name=" + filtername;
+            } else if (selected_username != "") {
+                url += "&name=" + selected_username;
+            }
+            listJson.open("GET", url);
+            listJson.onload = () => {
+                liste.innerHTML = ""; // remove old list
+                liste.appendChild(list_element);
+                content = JSON.parse(listJson.responseText)
+                content["entries"].forEach((entry) => {
+                    if (entry.id) {
+                        let new_element = list_element.cloneNode(true);
+                        new_element.id = "pcb-" + entry.id;
+                        new_element.querySelector("#pcb-string-votes").innerText = entry.upvotes;
+                        new_element.querySelector("#pcb-string-votes").id = entry.str + "-votes";
+                        if(entry.name != "None"){
+                        new_element.querySelector("#pcb-string-name").innerText = entry.name;
+                        } else {
+                            new_element.querySelector("#pcb-string-name").innerText = "";
+                        }
+                        new_element.querySelector("#pcb-string-username").innerText = entry.username;
+                        new_element.querySelector("#pcb-string-counter").innerText = entry.counter;
+                        if (entry.fav) {
+                            new_element.querySelector("#pcb-string-fav").classList.add("fa-heart");
+                        } else {
+                            new_element.querySelector("#pcb-string-fav").classList.add("fa-heart-o");
+                        }
+                        new_element.querySelector("#pcb-string-send").setAttribute("code", entry.str);
+                        if (entry.name.includes("-")) {
+                            new_element.querySelector("#pcb-string-send-anim").setAttribute("code-name", entry.name);
+                            new_element.querySelector("#pcb-string-send-anim").style = "";
+                        }
 
-		document.addEventListener('DOMContentLoaded', (event) => {
-			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.open("GET", "{{ url_for('api_boards')}}"); // false for synchronous request
-			xmlHttp.onload = () => {
-				const board_list = document.getElementById("board_list");
-				board_list.hidden=true;
-				let bl = JSON.parse(xmlHttp.responseText);
-				for(i=0;i<bl.count; i++){
-					let board_node = document.createElement("LI");
-					board_node.innerText = bl.list[i].board;
-					board_list.appendChild(board_node);
-				}
-			};
-			xmlHttp.send(null);
-		});
+                        const last_seen = new_element.querySelector("#pcb-string-last-seen");
+                        if (last_seen) {
+                            last_seen.innerText = entry.last_seen;
+                        }
+                        const pcb_canvas = new_element.querySelector("#pcb-string-str");
+                        pcb_canvas.setAttribute("code", entry.str);
+                        pcb_canvas.setAttribute("code-name", entry.name);
 
-	</script>
-	{% endif %}
-	<script>
-		var page = 1;
-		var num = 10;
-		var selected_username = "";
-		const load_pcb_data = (event, _page = undefined, _num = undefined, filtername = undefined) => {
-			if (event && event.target.getAttribute("page")) {
-				_page = event.target.getAttribute("page");
-				page=_page;
-			}
-			if (event && event.target.getAttribute("num")) {
-				_num = event.target.getAttribute("num");
-				num=_num;
-			}
-			var listJson = new XMLHttpRequest();
-			let liste = document.getElementById("liste")
-			let list_element = document.getElementById("list-element");
-			var url = "https://platinenmacher.tech/pcb/api/list?page="
-			if (_page) {
-				url += _page;
-			} else {
-				url += page;
-			}
-			url += "&num="
-			if (_num) {
-				url += _num;
-			}
-			else {
-				url += num;
-			}
-			if (filtername !== undefined) {
-				selected_username = filtername;
-				if (filtername !== "")
-					url += "&name=" + filtername;
-			} else if (selected_username != "") {
-				url += "&name=" + selected_username;
-			}
-			listJson.open("GET", url);
-			listJson.onload = () => {
-				liste.innerHTML = ""; // remove old list
-				content = JSON.parse(listJson.responseText)
-				content["entries"].forEach((entry) => {
-					if (entry.id) {
-						let new_element = list_element.cloneNode(true);
-						new_element.id = "pcb-" + entry.id;
-						new_element.querySelector("#pcb-string-votes").innerText = entry.upvotes;
-						new_element.querySelector("#pcb-string-votes").id = entry.str + "-votes";
-						new_element.querySelector("#pcb-string-name").innerText = entry.name;
-						new_element.querySelector("#pcb-string-username").innerText = entry.username;
-						new_element.querySelector("#pcb-string-counter").innerText = entry.counter;
-						if (entry.fav) {
-							new_element.querySelector("#pcb-string-fav").classList.add("fa-heart");
-						}
-						else {
-							new_element.querySelector("#pcb-string-fav").classList.add("fa-heart-o");
-						}
-						new_element.querySelector("#pcb-string-send").setAttribute("code", entry.str);
-						if (entry.name.includes("-")) {
-							new_element.querySelector("#pcb-string-send-anim").setAttribute("code-name", entry.name);
-							new_element.querySelector("#pcb-string-send-anim").style = "";
-						}
+                        new_element.style = "";
+                        const upvote_tag = new_element.querySelector("#string-vote-up");
+                        upvote_tag.setAttribute("data", entry.str);
+                        upvote_tag.id = entry.str + "-up";
 
-						const last_seen = new_element.querySelector("#pcb-string-last-seen");
-						if (last_seen) {
-							last_seen.innerText = entry.last_seen;
-						}
-						const pcb_canvas = new_element.querySelector("#pcb-string-str");
-						pcb_canvas.setAttribute("code", entry.str);
-						pcb_canvas.setAttribute("code-name", entry.name);
+                        const downvote_tag = new_element.querySelector("#string-vote-down");
+                        downvote_tag.setAttribute("data", entry.str);
+                        downvote_tag.id = entry.str + "-down";
 
-						new_element.style = "";
-						const upvote_tag = new_element.querySelector("#string-vote-up");
-						upvote_tag.setAttribute("data", entry.str);
-						upvote_tag.id = entry.str + "-up";
+                        {% if twitch %}
+                        new_element.querySelector("#pcb-string-send-anim").onclick = send_anim;
+                        new_element.querySelector("#pcb-string-send").onclick = send_chat;
+                        pcb_canvas.onclick = send_chat;
+                        upvote_tag.onclick = upvote;
+                        downvote_tag.onclick = downvote; 
+                        {% endif %}
 
-						const downvote_tag = new_element.querySelector("#string-vote-down");
-						downvote_tag.setAttribute("data", entry.str);
-						downvote_tag.id = entry.str + "-down";
+                        if (entry.voted === "True") {
+                            upvote_tag.style = "color: var(--upvoted-color)"
+                        }
 
-						{% if twitch %}
-						new_element.querySelector("#pcb-string-send-anim").onclick = send_anim;
-						new_element.querySelector("#pcb-string-send").onclick = send_chat;
-						pcb_canvas.onclick = send_chat;
-						upvote_tag.onclick = upvote;
-						downvote_tag.onclick = downvote;
-						{% endif %}
+                        if (entry.voted === "False") {
+                            downvote_tag.style = "color: var(--downvoted-color)"
+                        }
 
-						if (entry.voted === "True") {
-							upvote_tag.style = "color: var(--upvoted-color)"
-						}
+                        if (entry.username === content["username"]) {
+                            const edit_link = new_element.querySelector("#pcb-string-edit")
+                            edit_link.setAttribute("code", entry.str);
+                            edit_link.setAttribute("code-name", entry.name);
+                            edit_link.onclick = edit_code;
+                            edit_link.style = "";
 
-						if (entry.voted === "False") {
-							downvote_tag.style = "color: var(--downvoted-color)"
-						}
+                            const string_delete_form = new_element.querySelector("#pcb-string-delete");
+                            string_delete_form.style = "";
 
-						if (entry.username === content["username"]) {
-							const edit_link = new_element.querySelector("#pcb-string-edit")
-							edit_link.setAttribute("code", entry.str);
-							edit_link.setAttribute("code-name", entry.name);
-							edit_link.onclick = edit_code;
-							edit_link.style = "";
+                            const string_delete_field = new_element.querySelector("#pcb-string-orig");
+                            string_delete_field.value = entry.str;
+                        }
 
-							const string_delete_form = new_element.querySelector("#pcb-string-delete");
-							string_delete_form.style = "";
-
-							const string_delete_field = new_element.querySelector("#pcb-string-orig");
-							string_delete_field.value = entry.str;
-						}
-
-						liste.appendChild(new_element);
-					}
-					const pagination_item = document.querySelector(".page-item");
-					const parent = pagination_item.parentNode;
-					parent.innerHTML = "";
-					parent.appendChild(pagination_item);
-					for (i = 0; i < Math.ceil(content['total'] / num); i++) {
-						let new_page_item = pagination_item.cloneNode(true);
-						console.log(page)
-						if (i + 1 == page) {
-							new_page_item.style = "font-weight: bold;"
-						} else {
-							new_page_item.style = "";
-						}
-						new_page_item.querySelector(".page-link").innerText = i + 1;
-						new_page_item.querySelector(".page-link").setAttribute("page", i+1);
-						new_page_item.onclick = (event) => { load_pcb_data(event) };
-						pagination_item.parentNode.appendChild(new_page_item);
-					}
-				})
+                        liste.appendChild(new_element);
+                    }
+                    const pagination_item = document.querySelector(".page-item");
+                    const parent = pagination_item.parentNode;
+                    parent.innerHTML = "";
+                    parent.appendChild(pagination_item);
+                    for (i = 0; i < Math.ceil(content['total'] / num); i++) {
+                        let new_page_item = pagination_item.cloneNode(true);
+                        console.log(page)
+                        if (i + 1 == page) {
+                            new_page_item.style = "font-weight: bold;"
+                        } else {
+                            new_page_item.style = "";
+                        }
+                        new_page_item.querySelector(".page-link").innerText = i + 1;
+                        new_page_item.querySelector(".page-link").setAttribute("page", i + 1);
+                        new_page_item.onclick = (event) => {
+                            load_pcb_data(event)
+                        };
+                        pagination_item.parentNode.appendChild(new_page_item);
+                    }
+                })
 
 
-				const prevPics = document.querySelectorAll("canvas[code]")
-				const ppos = [[75, 25], [70, 28.125], [65, 31.25], [60, 34.375], [55, 37.5], [50, 40.625], [45, 43.75], [40, 46.875], [70, 21.875], [65, 25], [60, 28.125], [55, 31.25], [50, 34.375], [45, 37.5], [40, 40.625], [35, 43.75], [65, 18.75], [60, 21.875], [55, 25], [50, 28.125], [45, 31.25], [40, 34.375], [35, 37.5], [30, 40.625], [60, 15.625], [55, 18.75], [50, 21.875], [45, 25], [40, 28.125], [35, 31.25], [30, 34.375], [25, 37.5], [55, 12.5], [50, 15.625], [45, 18.75], [40, 21.875], [35, 25], [30, 28.125], [25, 31.25], [20, 34.375], [50, 9.375], [45, 12.5], [40, 15.625], [35, 18.75], [30, 21.875], [25, 25], [20, 28.125], [15, 31.25], [45, 6.25], [40, 9.375], [35, 12.5], [30, 15.625], [25, 18.75], [20, 21.875], [15, 25], [10, 28.125], [40, 3.125], [35, 6.25], [30, 9.375], [25, 12.5], [20, 15.625], [15, 18.75], [10, 21.875], [5, 25]]
-				const base_polygon = [[-5, 0], [0, -3.125], [5, 0], [0, 3.125]] //[[x,y],...]
-				const base_colors = { "w": "#fff", "s": "#000", "b": "#00f", "r": "#f00", "g": "#0f0", "y": "#ff0", "o": "#f70", "c": "#0ff", "m": "#f0f" }
+                const prevPics = document.querySelectorAll("canvas[code]")
+                const ppos = [
+                    [75, 25],
+                    [70, 28.125],
+                    [65, 31.25],
+                    [60, 34.375],
+                    [55, 37.5],
+                    [50, 40.625],
+                    [45, 43.75],
+                    [40, 46.875],
+                    [70, 21.875],
+                    [65, 25],
+                    [60, 28.125],
+                    [55, 31.25],
+                    [50, 34.375],
+                    [45, 37.5],
+                    [40, 40.625],
+                    [35, 43.75],
+                    [65, 18.75],
+                    [60, 21.875],
+                    [55, 25],
+                    [50, 28.125],
+                    [45, 31.25],
+                    [40, 34.375],
+                    [35, 37.5],
+                    [30, 40.625],
+                    [60, 15.625],
+                    [55, 18.75],
+                    [50, 21.875],
+                    [45, 25],
+                    [40, 28.125],
+                    [35, 31.25],
+                    [30, 34.375],
+                    [25, 37.5],
+                    [55, 12.5],
+                    [50, 15.625],
+                    [45, 18.75],
+                    [40, 21.875],
+                    [35, 25],
+                    [30, 28.125],
+                    [25, 31.25],
+                    [20, 34.375],
+                    [50, 9.375],
+                    [45, 12.5],
+                    [40, 15.625],
+                    [35, 18.75],
+                    [30, 21.875],
+                    [25, 25],
+                    [20, 28.125],
+                    [15, 31.25],
+                    [45, 6.25],
+                    [40, 9.375],
+                    [35, 12.5],
+                    [30, 15.625],
+                    [25, 18.75],
+                    [20, 21.875],
+                    [15, 25],
+                    [10, 28.125],
+                    [40, 3.125],
+                    [35, 6.25],
+                    [30, 9.375],
+                    [25, 12.5],
+                    [20, 15.625],
+                    [15, 18.75],
+                    [10, 21.875],
+                    [5, 25]
+                ]
+                const base_polygon = [
+                        [-5, 0],
+                        [0, -3.125],
+                        [5, 0],
+                        [0, 3.125]
+                    ] //[[x,y],...]
+                const base_colors = {
+                    "w": "#fff",
+                    "s": "#000",
+                    "b": "#00f",
+                    "r": "#f00",
+                    "g": "#0f0",
+                    "y": "#ff0",
+                    "o": "#f70",
+                    "c": "#0ff",
+                    "m": "#f0f"
+                }
 
-				for (let pp of prevPics) {
-					let code = pp.getAttribute("code")
-					code = (code.trim().toLowerCase().replace(/([^rgbmcyows])/g, "s") + Array(ppos.length).fill('s').join('')).substr(0, ppos.length)
-					var ctx = pp.getContext('2d')
-					for (let i = 0; i < code.length; i++) {
-						ctx.fillStyle = base_colors[code.substr(i, 1)]
-						ctx.beginPath()
-						let offset = ppos[i]
-						for (let xy in base_polygon) {
-							if (xy < 1) {
-								ctx.moveTo((base_polygon[0][0] + offset[0]) * 3, (base_polygon[0][1] + offset[1]) * 3)
-							} else {
-								ctx.lineTo((base_polygon[xy][0] + offset[0]) * 3, (base_polygon[xy][1] + offset[1]) * 3)
-							}
-						}
-						ctx.closePath()
-						ctx.fill()
-					}
-				}
-			}
-			listJson.send(null);
-		};
-		document.addEventListener('DOMContentLoaded', (e) => { load_pcb_data(null, page, num) });
-
-	</script>
+                for (let pp of prevPics) {
+                    let code = pp.getAttribute("code")
+                    code = (code.trim().toLowerCase().replace(/([^rgbmcyows])/g, "s") + Array(ppos.length).fill('s').join('')).substr(0, ppos.length)
+                    var ctx = pp.getContext('2d')
+                    for (let i = 0; i < code.length; i++) {
+                        ctx.fillStyle = base_colors[code.substr(i, 1)]
+                        ctx.beginPath()
+                        let offset = ppos[i]
+                        for (let xy in base_polygon) {
+                            if (xy < 1) {
+                                ctx.moveTo((base_polygon[0][0] + offset[0]) * 3, (base_polygon[0][1] + offset[1]) * 3)
+                            } else {
+                                ctx.lineTo((base_polygon[xy][0] + offset[0]) * 3, (base_polygon[xy][1] + offset[1]) * 3)
+                            }
+                        }
+                        ctx.closePath()
+                        ctx.fill()
+                    }
+                }
+            }
+            listJson.send(null);
+        };
+        document.addEventListener('DOMContentLoaded', (e) => {
+            load_pcb_data(null, page, num)
+        });
+    </script>
 </head>
 
 <body>
-	<div class="container-fluid">
-		<div class="row">
-			<div class="col-md-12">
-				<nav class="navbar navbar-expand navbar-light background">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <nav class="navbar navbar-expand navbar-light background">
 
-					<a class="navbar-brand" href="{{ url_for('index') }}">!PCB Strings</a>
-					<button class="navbar-toggler" type="button" data-toggle="collapse"
-						data-target="#bs-example-navbar-collapse-1">
+                    <a class="navbar-brand" href="{{ url_for('index') }}" style="margin-left:15px">!PCB Strings</a>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
 						<span class="navbar-toggler-icon"></span>
 					</button>
-					<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-						<ul class="navbar-nav mr-auto">
-							<li class="nav-item active">
-								<a class="nav-link" href="#" onclick="load_pcb_data(null, page, num, '')">Liste <span
+                    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                        <ul class="navbar-nav mr-auto">
+                            <li class="nav-item active">
+                                <a class="nav-link" href="#" onclick="load_pcb_data(null, page, num, '')">Liste <span
 										class="sr-only">(current)</span></a>
-							</li>
-							{% if twitch %}
-							<li class="nav-item">
-								<a class="nav-link" href="#" onclick="load_pcb_data(null, page, num, '{{ user
-								}}')">{{ user
-									}}</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" onclick="edit_code()">
+                            </li>
+                            {% if twitch %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" onclick="load_pcb_data(null, page, num, '{{ user }}')">
+									{{ user	}}
+								</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" onclick="edit_code()">
 									New
 								</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link fa fa-heart"
-									href="{{ url_for('show_users_favorites', username=user) }}" aria-hidden="true"></a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link fa fa-circle" href="#" id="user_led"></a>
-							</li>
-							{% endif %}
-							<li class="nav-item">
-								{% if twitch %}
-								<a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
-								{% else %}
-								<a class="nav-link" href="{{ url_for('login') }}">Login</a>
-								{% endif %}
-							</li>
-							<li class="nav-item">
-								<a class="nav-link fa fa-cubes" href="{{ url_for('static', filename='sim.html') }}"></a>
-							</li>
-							<li>
-								<a class="nav-link" onmouseenter="getElementById('board_list').hidden=false" href="#">{{boards_online.count}} Boards online</a>
-								<div style="position: relative;" ><ul id="board_list"  style="position: absolute; background: #fff;" onmouseleave="getElementById('board_list').hidden=true" >
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link fa fa-heart" href="{{ url_for('show_users_favorites', username=user) }}" aria-hidden="true"></a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link fa fa-circle" href="#" id="user_led"></a>
+                            </li>
+                            {% endif %}
+                            <li class="nav-item">
+                                {% if twitch %}
+                                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a> {% else %}
+                                <a class="nav-link" href="{{ url_for('login') }}">Login</a> {% endif %}
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link fa fa-cubes" href="{{ url_for('static', filename='sim.html') }}"></a>
+                            </li>
+                            <li id="boardlist_nav" class="nav-item boardlist_nav">
+                                <a class="nav-link" class="boardlist_nav">{{boards_online.count}} Boards online</a>
+                                <ul id="board_list" class="boardlist_nav"></ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link fa fa-bug" href="https://kurzschluss-junkies.de/c/projekte/communtiy-board/12" aria-hidden="true"></a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+                <div id="stringlist">
+                    {% include('string_list.html') %}
+                </div>
+                <div id="overlay"></div>
+                <div id="editor">
+                    {% include('editor.html') %}
+                </div>
+            </div>
+            <nav class="pagination-sm">
+                <ul class="pagination" style="flex-wrap: wrap;">
+                    <li class="page-item" style="display: none;">
+                        <a class="page-link" href="#">1</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
 
-								</ul></div>
-							</li>
-						</ul>
-					</div>
-				</nav>
-				<div id="stringlist">
-					{% include('string_list.html') %}
-				</div>
-				<div id="overlay"></div>
-				<div id="editor">
-					{% include('editor.html') %}
-				</div>
-			</div>
-			<nav class="pagination-sm">
-				<ul class="pagination" style="flex-wrap: wrap;">
-					<li class="page-item" style="display: none;">
-						<a class="page-link" href="#">1</a>
-					</li>
-				</ul>
-			</nav>
-		</div>
-	</div>
-
-	<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 </body>
 
 </html>
