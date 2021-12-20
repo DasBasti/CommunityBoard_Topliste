@@ -13,17 +13,17 @@
 
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/font-awesome.min.css') }}" rel="stylesheet"> 
+    <link href="{{ url_for('static', filename='css/font-awesome.min.css') }}" rel="stylesheet">
     {% if twitch %}
     <script src="{{ url_for('static', filename='twitch.js') }}"></script>
     <script>
         function send_chat(event) {
             let code = event;
             let name = null;
-            if (event.target){
-            code = event.target.getAttribute("code");
-            name = event.target.getAttribute("code-name");
-        }
+            if (event.target) {
+                code = event.target.getAttribute("code");
+                name = event.target.getAttribute("code-name");
+            }
             const overlay = document.getElementById("overlay")
             overlay.style.display = "block";
             const token = "{{ twitch }}";
@@ -37,9 +37,14 @@
                 username
             });
             chat.connect().then(() => {
-                let message = "!pcb " + code;
-                if (name) {
-                    message = "!pcb " + name;
+                let message;
+                if (code.startsWith("!pcb")) {
+                    message = code;
+                } else {
+                    message = "!pcb " + code;
+                    if (name && name != "None") {
+                        message = "!pcb " + name;
+                    }
                 }
                 chat.say(channel, message).then(() => {
                     chat.disconnect();
@@ -80,7 +85,7 @@
                 console.log(event.target)
                 code = event.target.getAttribute("code");
                 name = event.target.getAttribute("code-name");
-            } 
+            }
             const editor = document.getElementById("editor");
             editor.style.display = "block";
 
@@ -114,15 +119,15 @@
             for (let button of buttons) { // Initialisierung LED's
                 button.setAttribute("colorChar", "s");
                 button.setAttribute("pos", i++);
-                button.addEventListener("mousedown", function() {
+                button.addEventListener("mousedown", function () {
                     clicked = true
                     this.setAttribute("colorChar", selcolor)
                 })
-                document.addEventListener("mouseup", function() {
+                document.addEventListener("mouseup", function () {
                     clicked = false
                     outputChars()
                 })
-                button.addEventListener("mouseenter", function() {
+                button.addEventListener("mouseenter", function () {
                     if (clicked) {
                         this.setAttribute("colorChar", selcolor)
                     }
@@ -131,7 +136,7 @@
 
             i = 0
             for (let button of cbuttons) { // Initialisierung Farbauswahl
-                button.addEventListener("click", function() {
+                button.addEventListener("click", function () {
                     if (lcb) {
                         lcb.classList.remove("selected")
                     }
@@ -139,7 +144,7 @@
                     selcolor = lcb.getAttribute("colorChar")
                     lcb.classList.add("selected")
                 })
-                button.addEventListener("dblclick", function() {
+                button.addEventListener("dblclick", function () {
                     for (let button0 of buttons) {
                         button0.setAttribute("colorChar", button.getAttribute("colorChar"))
                     }
@@ -284,8 +289,8 @@
                         new_element.id = "pcb-" + entry.id;
                         new_element.querySelector("#pcb-string-votes").innerText = entry.upvotes;
                         new_element.querySelector("#pcb-string-votes").id = entry.str + "-votes";
-                        if(entry.name != "None"){
-                        new_element.querySelector("#pcb-string-name").innerText = entry.name;
+                        if (entry.name != "None") {
+                            new_element.querySelector("#pcb-string-name").innerText = entry.name;
                         } else {
                             new_element.querySelector("#pcb-string-name").innerText = "";
                         }
@@ -324,7 +329,7 @@
                         new_element.querySelector("#pcb-string-send").onclick = send_chat;
                         pcb_canvas.onclick = send_chat;
                         upvote_tag.onclick = upvote;
-                        downvote_tag.onclick = downvote; 
+                        downvote_tag.onclick = downvote;
                         {% endif %}
 
                         if (entry.voted === "True") {
@@ -441,11 +446,11 @@
                     [5, 25]
                 ]
                 const base_polygon = [
-                        [-5, 0],
-                        [0, -3.125],
-                        [5, 0],
-                        [0, 3.125]
-                    ] //[[x,y],...]
+                    [-5, 0],
+                    [0, -3.125],
+                    [5, 0],
+                    [0, 3.125]
+                ] //[[x,y],...]
                 const base_colors = {
                     "w": "#fff",
                     "s": "#000",
@@ -493,28 +498,30 @@
                 <nav class="navbar navbar-expand navbar-light background">
 
                     <a class="navbar-brand" href="{{ url_for('index') }}" style="margin-left:15px">!PCB Strings</a>
-                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-						<span class="navbar-toggler-icon"></span>
-					</button>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse"
+                        data-target="#bs-example-navbar-collapse-1">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
                     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                         <ul class="navbar-nav mr-auto">
                             <li class="nav-item active">
                                 <a class="nav-link" href="#" onclick="load_pcb_data(null, page, num, '')">Liste <span
-										class="sr-only">(current)</span></a>
+                                        class="sr-only">(current)</span></a>
                             </li>
                             {% if twitch %}
                             <li class="nav-item">
                                 <a class="nav-link" href="#" onclick="load_pcb_data(null, page, num, '{{ user }}')">
-									{{ user	}}
-								</a>
+                                    {{ user }}
+                                </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" onclick="edit_code()">
-									New
-								</a>
+                                    New
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link fa fa-heart" href="{{ url_for('show_users_favorites', username=user) }}" aria-hidden="true"></a>
+                                <a class="nav-link fa fa-heart"
+                                    href="{{ url_for('show_users_favorites', username=user) }}" aria-hidden="true"></a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link fa fa-circle" href="#" id="user_led"></a>
@@ -522,18 +529,22 @@
                             {% endif %}
                             <li class="nav-item">
                                 {% if twitch %}
-                                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a> {% else %}
-                                <a class="nav-link" href="{{ url_for('login') }}">Login</a> {% endif %}
+                                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                                {% else %}
+                                <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                                {% endif %}
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link fa fa-cubes" href="{{ url_for('static', filename='sim.html') }}"></a>
                             </li>
                             <li id="boardlist_nav" class="nav-item boardlist_nav">
                                 <a class="nav-link" class="boardlist_nav">{{boards_online.count}} Boards online</a>
-                                <ul id="board_list" class="boardlist_nav"></ul>
+                                {% if twitch %}<ul id="board_list" class="boardlist_nav"></ul>{% endif %}
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link fa fa-bug" href="https://kurzschluss-junkies.de/c/projekte/communtiy-board/12" aria-hidden="true"></a>
+                                <a class="nav-link fa fa-bug"
+                                    href="https://kurzschluss-junkies.de/c/projekte/communtiy-board/12"
+                                    aria-hidden="true"></a>
                             </li>
                         </ul>
                     </div>

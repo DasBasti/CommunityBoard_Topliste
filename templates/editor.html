@@ -74,25 +74,35 @@
 	</div>
 </div>
 <div id="colorSelector">
-<button	colorChar="w">White</button>
-<button	colorChar="s">Black</button>
-<button	colorChar="b">Blue</button>
-<button	colorChar="r">Red</button>
-<button	colorChar="g">Green</button>
-<button	colorChar="y">Yellow</button>
-<button	colorChar="o">Orange</button>
-<button	colorChar="c">Cyan</button>
-<button	colorChar="m">Magenta</button>
+	<button colorChar="w">White</button>
+	<button colorChar="s">Black</button>
+	<button colorChar="b">Blue</button>
+	<button colorChar="r">Red</button>
+	<button colorChar="g">Green</button>
+	<button colorChar="y">Yellow</button>
+	<button colorChar="o">Orange</button>
+	<button colorChar="c">Cyan</button>
+	<button colorChar="m">Magenta</button>
 </div>
 <form action="{{ url_for('update_string') }}" method="POST">
-    <div id="name">Kurzname: <input type="text" id="output_name" name="name"><br /></div>
-    String: <input type="text" id="output_str" readonly><br />
-    
-	<button id="save_button" style="display:none;" type="submit" value="Submit">Speichern</button> 
+	<div id="name">Kurzname: <input type="text" id="output_name" name="name"><br /></div>
+	String: <input type="text" id="output_str" readonly><br />
 
-	<button id="send_button" style="display:none;" type="button" onclick="send_chat(document.getElementById('pcb_string').value);document.getElementById('editor').style.display='none'">Send</button>
+	<button id="save_button" style="display:none;" type="submit" value="Submit">Speichern</button>
 
-<button type="button" onclick="document.getElementById('editor').style.display='none'">Abbrechen</button>
-<input type="hidden" id="pcb_string" name="pcb_string">
-<input type="hidden" id="orig_pcb_string" name="orig_pcb_string">
+	<button id="send_button" style="display:none;" type="button" onclick="
+	console.log('feld: ',document.getElementById('output_str').value);
+	if(document.getElementById('output_name').value == '')
+	{
+		send_chat(document.getElementById('output_str').value);	
+	}
+	else {
+		send_chat(document.getElementById('output_name').value);
+	}
+	document.getElementById('editor').style.display='none'
+	">Send</button>
+
+	<button type="button" onclick="document.getElementById('editor').style.display='none'">Abbrechen</button>
+	<input type="hidden" id="pcb_string" name="pcb_string">
+	<input type="hidden" id="orig_pcb_string" name="orig_pcb_string">
 </form>
