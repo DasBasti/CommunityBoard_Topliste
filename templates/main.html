@@ -97,14 +97,9 @@
             let lcb //Start LED bei auswahl Paint
             document.getElementById("orig_pcb_string").value = code
 
-            if (code == "") {
-                document.getElementById('save_button').style.display = 'none'
-                document.getElementById('send_button').style.display = 'block'
-                document.getElementById('name').style.display = 'none'
-            } else {
-                document.getElementById('save_button').style.display = 'block'
-                document.getElementById('send_button').style.display = 'none'
-            }
+            document.getElementById('save_button').style.display = 'block'
+            document.getElementById('send_button').style.display = 'block'
+            document.getElementById('name').style.display = 'block'
 
             function outputChars() { // Ausgabe !pcb...
                 let v = ""
